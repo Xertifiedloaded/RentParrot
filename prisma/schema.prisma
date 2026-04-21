@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Category {
+  GOOD_ELECTRICITY
+  BAD_ELECTRICITY
+  GOOD_WATER
+  BAD_WATER
+  GOOD_LANDLORD
+  BAD_LANDLORD
+  UNFAIR_RENT_INCREASE
+  POOR_SANITATION
+  BAD_ROAD
+  POOR_NETWORK
+  OTHER
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  properties Property[]
+  reviews    Review[]
+}
+
+model Property {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  address     String
+  latitude    Float
+  longitude   Float
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId  String   @db.ObjectId
+  user    User     @relation(fields: [userId], references: [id])
+  reviews Review[]
+}
+
+model Review {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  category   Category
+  comment    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  propertyId String   @db.ObjectId
+  property   Property @relation(fields: [propertyId], references: [id])
+}

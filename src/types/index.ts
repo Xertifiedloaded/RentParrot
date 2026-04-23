@@ -66,25 +66,23 @@ export interface Property {
   id: string;
   name: string;
   address: string;
+  state: string;       
   latitude: number;
   longitude: number;
   description?: string;
   createdAt: string;
-  userId: string;
-  user?: User;
+  user?: { id: string; email: string; name: string };
   reviews?: Review[];
   _count?: { reviews: number };
 }
 
 export interface Review {
   id: string;
-  category: Category;
+  categories: Category[];  
   comment: string;
   createdAt: string;
-  userId: string;
-  propertyId: string;
-  user?: User;
-  property?: Property;
+  user?: { id: string; name: string };
+  property?: { id: string; name: string; address: string };
 }
 
 export interface AuthUser {

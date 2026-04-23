@@ -69,10 +69,10 @@ export default function PropertyDetailPage() {
 
   const reviews = property.reviews || [];
   const positiveReviews = reviews.filter(
-    (r) => !NEGATIVE_CATEGORIES.includes(r.category),
+    (r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c))
   );
-  const negativeReviews = reviews.filter((r) =>
-    NEGATIVE_CATEGORIES.includes(r.category),
+  const negativeReviews = reviews.filter(
+    (r) => r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c))
   );
 
   const displayedReviews =
@@ -84,7 +84,9 @@ export default function PropertyDetailPage() {
 
   const categoryCounts: Record<string, number> = {};
   reviews.forEach((r) => {
-    categoryCounts[r.category] = (categoryCounts[r.category] || 0) + 1;
+    r.categories.forEach((cat) => {
+      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+    });
   });
 
   const topCategories = Object.entries(categoryCounts)

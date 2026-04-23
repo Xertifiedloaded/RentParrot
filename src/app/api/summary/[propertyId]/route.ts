@@ -8,7 +8,7 @@ export async function GET(
   try {
     const reviews = await prisma.review.findMany({
       where: { propertyId: params.propertyId },
-      select: { category: true, comment: true },
+      select: { categories: true, comment: true },
     });
 
     if (reviews.length === 0) {
@@ -19,7 +19,7 @@ export async function GET(
     }
 
     const reviewText = reviews
-      .map((r) => `[${r.category}]: ${r.comment}`)
+      .map((r) => `[${r.categories.join(', ')}]: ${r.comment}`)
       .join('\n');
 
     const prompt = `You are a helpful assistant analyzing tenant reviews for a property in Lagos, Nigeria. Based on the following reviews, generate a concise 2-3 sentence summary highlighting the most important issues and positives. Be direct and helpful for someone considering renting this property.
@@ -47,7 +47,9 @@ Respond with just the summary paragraph, no preamble.`;
       // Fallback to simple summary
       const categoryCounts: Record<string, number> = {};
       reviews.forEach((r) => {
-        categoryCounts[r.category] = (categoryCounts[r.category] || 0) + 1;
+        r.categories.forEach((cat) => {
+          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+        });
       });
       const topIssues = Object.entries(categoryCounts)
         .sort((a, b) => b[1] - a[1])

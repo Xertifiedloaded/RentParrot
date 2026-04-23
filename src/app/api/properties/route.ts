@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
+    const state = searchParams.get('state');   // ← add this
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
     const radius = searchParams.get('radius') || '5';
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (lat && lng) {
       const latF = parseFloat(lat);
       const lngF = parseFloat(lng);
-      const rad = parseFloat(radius) / 111; // rough km to degrees
+      const rad = parseFloat(radius) / 111;
 
       properties = await prisma.property.findMany({
         where: {
@@ -35,12 +36,26 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
       });
     } else if (search) {
+      // Search ignores state filter — show everything matching
       properties = await prisma.property.findMany({
         where: {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
             { address: { contains: search, mode: 'insensitive' } },
+            { state: { contains: search, mode: 'insensitive' } },  // ← also search by state name
           ],
+        },
+        include: {
+          user: { select: { id: true, email: true, name: true } },
+          _count: { select: { reviews: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    } else if (state) {
+      // State filter — show only properties in detected state
+      properties = await prisma.property.findMany({
+        where: {
+          state: { contains: state, mode: 'insensitive' },
         },
         include: {
           user: { select: { id: true, email: true, name: true } },
@@ -62,10 +77,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ properties });
   } catch (error) {
     console.error('Get properties error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -77,14 +89,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, address, latitude, longitude, description } = body;
+    const { name, address, state, latitude, longitude, description } = body; // ← add state
 
-    if (
-      !name ||
-      !address ||
-      latitude === undefined ||
-      longitude === undefined
-    ) {
+    if (!name || !address || latitude === undefined || longitude === undefined) {
       return NextResponse.json(
         { error: 'Name, address, latitude, and longitude are required' },
         { status: 400 },
@@ -95,6 +102,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         address,
+        state: state || 'Lagos',   // ← save it
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
         description,
@@ -108,9 +116,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ property }, { status: 201 });
   } catch (error) {
     console.error('Create property error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

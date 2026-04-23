@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import './globals.css';
+import { LocationPermission } from '@/components/location-permission';
 
 export const metadata: Metadata = {
   title: 'Know Before You Rent – Nigerian Tenant Insight Platform',
@@ -33,6 +34,7 @@ export default function RootLayout({
               },
             }}
           />
+                {/* <LocationPermission /> */}
         </AuthProvider>
       </body>
     </html>

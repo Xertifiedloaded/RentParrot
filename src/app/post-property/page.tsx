@@ -6,12 +6,21 @@ import { useAuth } from '@/components/AuthProvider';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
+const NIGERIAN_STATES = [
+  'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
+  'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe', 'Imo',
+  'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa',
+  'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba',
+  'Yobe', 'Zamfara',
+];
+
 export default function PostPropertyPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({
     name: '',
     address: '',
+    state: 'Lagos',
     latitude: '',
     longitude: '',
     description: '',
@@ -27,20 +36,23 @@ export default function PostPropertyPage() {
       return;
     }
     try {
+      const query = `${form.address}, ${form.state} State, Nigeria`;
       const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(form.address + ', Lagos, Nigeria')}&key=${apiKey}`,
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`,
       );
       const data = await res.json();
       if (data.results?.[0]) {
         const { lat, lng } = data.results[0].geometry.location;
+        // Show the resolved address so user can confirm it's correct
+        const resolvedAddress = data.results[0].formatted_address;
         setForm((prev) => ({
           ...prev,
           latitude: lat.toString(),
           longitude: lng.toString(),
         }));
-        toast.success('Coordinates found!');
+        toast.success(`Found: ${resolvedAddress}`);
       } else {
-        toast.error('Address not found. Enter coordinates manually.');
+        toast.error('Address not found. Try being more specific or enter coordinates manually.');
       }
     } catch {
       toast.error('Geocoding failed');
@@ -50,14 +62,10 @@ export default function PostPropertyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     if (!form.latitude || !form.longitude) {
-      setError(
-        "Please add coordinates. Click 'Get Coordinates' or enter manually.",
-      );
+      setError("Please add coordinates. Click 'Get Coordinates' or enter manually.");
       return;
     }
-
     setSubmitting(true);
     try {
       const res = await fetch('/api/properties', {
@@ -76,12 +84,7 @@ export default function PostPropertyPage() {
     }
   };
 
-  if (loading)
-    return (
-      <div className="loader-wrap">
-        <div className="loader" />
-      </div>
-    );
+  if (loading) return <div className="loader-wrap"><div className="loader" /></div>;
 
   if (!user) {
     return (
@@ -89,12 +92,8 @@ export default function PostPropertyPage() {
         <div className="empty-state">
           <span className="empty-state-icon">🔒</span>
           <div className="empty-state-title">Sign in required</div>
-          <div className="empty-state-desc">
-            You need to be signed in to post a property.
-          </div>
-          <Link href="/login" className="btn btn-primary">
-            Sign In
-          </Link>
+          <div className="empty-state-desc">You need to be signed in to post a property.</div>
+          <Link href="/login" className="btn btn-primary">Sign In</Link>
         </div>
       </div>
     );
@@ -104,9 +103,7 @@ export default function PostPropertyPage() {
     <div className="page-md">
       <div className="page-header">
         <h1 className="page-title">Add a Property</h1>
-        <p className="page-subtitle">
-          List a Lagos property to collect tenant reviews
-        </p>
+        <p className="page-subtitle">List a property to collect tenant reviews</p>
       </div>
 
       <div className="card">
@@ -123,24 +120,39 @@ export default function PostPropertyPage() {
             />
           </div>
 
-          <div className="form-group">
-            <label>Full Address *</label>
-            <input
-              type="text"
-              placeholder="e.g. 14 Admiralty Way, Lekki Phase 1"
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              required
-            />
-            <button
-              type="button"
-              className="btn btn-outline btn-sm"
-              style={{ alignSelf: 'flex-start', marginTop: '8px' }}
-              onClick={handleGeocodeAddress}
-            >
-              📍 Get Coordinates from Address
-            </button>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Full Address *</label>
+              <input
+                type="text"
+                placeholder="e.g. 14 Admiralty Way, Lekki Phase 1"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>State *</label>
+              <select
+                value={form.state}
+                onChange={(e) => setForm({ ...form, state: e.target.value })}
+                required
+              >
+                {NIGERIAN_STATES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            style={{ alignSelf: 'flex-start', marginBottom: '16px' }}
+            onClick={handleGeocodeAddress}
+          >
+            📍 Get Coordinates from Address
+          </button>
 
           <div className="form-row">
             <div className="form-group">
@@ -161,9 +173,7 @@ export default function PostPropertyPage() {
                 step="any"
                 placeholder="3.4219"
                 value={form.longitude}
-                onChange={(e) =>
-                  setForm({ ...form, longitude: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, longitude: e.target.value })}
                 required
               />
             </div>
@@ -174,59 +184,26 @@ export default function PostPropertyPage() {
             <textarea
               placeholder="Briefly describe this property or estate…"
               value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </div>
 
-          <div
-            style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}
-          >
-            <Link href="/properties" className="btn btn-outline">
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={submitting}
-            >
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <Link href="/properties" className="btn btn-outline">Cancel</Link>
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Adding Property…' : 'Add Property'}
             </button>
           </div>
         </form>
       </div>
 
-      <div
-        className="card"
-        style={{
-          marginTop: '16px',
-          background: 'var(--accent-glow)',
-          borderColor: 'rgba(232,93,4,0.2)',
-        }}
-      >
-        <div
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontWeight: 700,
-            marginBottom: '8px',
-            fontSize: '14px',
-            color: 'var(--accent)',
-          }}
-        >
+      <div className="card" style={{ marginTop: '16px', background: 'var(--accent-glow)', borderColor: 'rgba(232,93,4,0.2)' }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, marginBottom: '8px', fontSize: '14px', color: 'var(--accent)' }}>
           💡 Lagos Coordinate Hints
         </div>
-        <div
-          style={{
-            fontSize: '13px',
-            color: 'var(--text-secondary)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-          }}
-        >
+        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <span>🏖️ Lekki Phase 1: 6.4281, 3.4219</span>
-          <span>🏙️ Victoria Island: 6.4281, 3.4219</span>
+          <span>🏙️ Victoria Island: 6.4698, 3.4270</span>
           <span>🎓 Yaba: 6.5059, 3.3760</span>
           <span>🌇 Surulere: 6.4983, 3.3563</span>
           <span>🏘️ Ikeja: 6.5954, 3.3353</span>

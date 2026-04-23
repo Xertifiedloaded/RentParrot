@@ -12,6 +12,25 @@ export default function PropertyCard({ property }: { property: Property }) {
         <div className="property-meta">
           <h3>{property.name}</h3>
           <p className="property-address">📍 {property.address}</p>
+          {(property as any).state && (
+            <span
+              style={{
+                display: 'inline-block',
+                marginTop: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--accent)',
+                background: 'var(--accent-glow)',
+                border: '1px solid rgba(232,93,4,0.2)',
+                borderRadius: '4px',
+                padding: '1px 7px',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {(property as any).state}
+            </span>
+          )}
         </div>
       </div>
       {property.description && (
@@ -23,9 +42,7 @@ export default function PropertyCard({ property }: { property: Property }) {
           {reviewCount} review{reviewCount !== 1 ? 's' : ''}
         </span>
         <span className="property-date">
-          {formatDistanceToNow(new Date(property.createdAt), {
-            addSuffix: true,
-          })}
+          {formatDistanceToNow(new Date(property.createdAt), { addSuffix: true })}
         </span>
       </div>
     </Link>

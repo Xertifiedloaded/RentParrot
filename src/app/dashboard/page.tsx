@@ -29,7 +29,7 @@ export default function DashboardPage() {
       fetch(`/api/reviews?userId=${user.id}`).then((r) => r.json()),
     ]).then(([propData, revData]) => {
       const filtered = (propData.properties || []).filter(
-        (p: Property) => p.userId === user.id,
+        (p: Property) => p.user?.id === user.id,  // fix: use p.user?.id
       );
       setMyProperties(filtered);
       setMyReviews(revData.reviews || []);
@@ -255,19 +255,22 @@ export default function DashboardPage() {
                   gap: '8px',
                 }}
               >
-                <div>
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      background: 'var(--bg-elevated)',
-                      padding: '3px 10px',
-                      borderRadius: '20px',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {CATEGORY_LABELS[r.category]}
-                  </span>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {r.categories.map((cat) => (
+                    <span
+                      key={cat}
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        background: 'var(--bg-elevated)',
+                        padding: '3px 10px',
+                        borderRadius: '20px',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {CATEGORY_LABELS[cat]}
+                    </span>
+                  ))}
                 </div>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                   {formatDistanceToNow(new Date(r.createdAt), {
@@ -286,7 +289,7 @@ export default function DashboardPage() {
               </p>
               {r.property && (
                 <Link
-                  href={`/properties/${r.propertyId}`}
+                  href={`/properties/${r.property.id}`}
                   style={{ fontSize: '12px', color: 'var(--accent)' }}
                 >
                   📍 {r.property.name}

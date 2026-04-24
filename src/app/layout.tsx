@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
@@ -8,9 +8,41 @@ export const metadata: Metadata = {
   title: 'Know Before You Rent – Nigerian Tenant Insight Platform',
   description:
     'Make informed rental decisions in Nigeria with real tenant reviews.',
+
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
+
+  openGraph: {
+    title: 'Know Before You Rent – Nigerian Tenant Insight Platform',
+    description:
+      'Make informed rental decisions in Nigeria with real tenant reviews.',
+    url: 'https://yourdomain.com',
+    siteName: 'Know Before You Rent',
+    images: [
+      {
+        url: '/icon.png',
+        width: 1200,
+        height: 630,
+        alt: 'Know Before You Rent',
+      },
+    ],
+    locale: 'en_NG',
+    type: 'website',
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Know Before You Rent – Nigerian Tenant Insight Platform',
+    description:
+      'Make informed rental decisions in Nigeria with real tenant reviews.',
+    images: ['/icon.png'],
+  },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,

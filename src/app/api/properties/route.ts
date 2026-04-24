@@ -97,18 +97,19 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
+
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Support multipart/form-data for image upload OR JSON for backwards compat
     const contentType = request.headers.get('content-type') || '';
     let fields: Record<string, string> = {};
     let imageFile: File | null = null;
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
-      for (const [key, value] of formData.entries()) {
+
+      for (const [key, value] of Array.from(formData.entries())) {
         if (key === 'image' && value instanceof File && value.size > 0) {
           imageFile = value;
         } else if (typeof value === 'string') {
@@ -145,13 +146,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Upload image to Cloudinary if provided
     let imageUrl: string | null = null;
     let imagePublicId: string | null = null;
 
     if (imageFile) {
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
-      const uploaded = await uploadImage(buffer, imageFile.name);
+      const file = imageFile as File;
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploaded = await uploadImage(buffer, file.name);
+
       imageUrl = uploaded.url;
       imagePublicId = uploaded.publicId;
     }

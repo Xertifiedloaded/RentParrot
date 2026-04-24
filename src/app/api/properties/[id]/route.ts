@@ -43,6 +43,7 @@ export async function PATCH(
 ) {
   try {
     const authUser = await getAuthUser();
+
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -50,12 +51,14 @@ export async function PATCH(
     const existing = await prisma.property.findUnique({
       where: { id: params.id },
     });
+
     if (!existing) {
       return NextResponse.json(
         { error: 'Property not found' },
         { status: 404 },
       );
     }
+
     if (existing.userId !== authUser.userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -68,7 +71,8 @@ export async function PATCH(
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
-      for (const [key, value] of formData.entries()) {
+
+      for (const [key, value] of Array.from(formData.entries())) {
         if (key === 'image' && value instanceof File && value.size > 0) {
           imageFile = value;
         } else if (key === 'removeImage' && value === 'true') {
@@ -88,17 +92,18 @@ export async function PATCH(
     let imagePublicId = existing.imagePublicId;
 
     if (removeImage && existing.imagePublicId) {
-      // Delete from Cloudinary
       await cloudinary.uploader.destroy(existing.imagePublicId);
       imageUrl = null;
       imagePublicId = null;
     } else if (imageFile) {
-      // Delete old image from Cloudinary if present
       if (existing.imagePublicId) {
         await cloudinary.uploader.destroy(existing.imagePublicId);
       }
-      const buffer = Buffer.from(await imageFile.arrayBuffer());
-      const uploaded = await uploadImage(buffer, imageFile.name);
+
+      const file = imageFile as File;
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const uploaded = await uploadImage(buffer, file.name);
+
       imageUrl = uploaded.url;
       imagePublicId = uploaded.publicId;
     }
@@ -146,6 +151,7 @@ export async function DELETE(
 ) {
   try {
     const authUser = await getAuthUser();
+
     if (!authUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -153,12 +159,14 @@ export async function DELETE(
     const property = await prisma.property.findUnique({
       where: { id: params.id },
     });
+
     if (!property) {
       return NextResponse.json(
         { error: 'Property not found' },
         { status: 404 },
       );
     }
+
     if (property.userId !== authUser.userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -168,10 +176,17 @@ export async function DELETE(
       await cloudinary.uploader.destroy(property.imagePublicId);
     }
 
-    await prisma.review.deleteMany({ where: { propertyId: params.id } });
-    await prisma.property.delete({ where: { id: params.id } });
+    await prisma.review.deleteMany({
+      where: { propertyId: params.id },
+    });
 
-    return NextResponse.json({ message: 'Property deleted successfully' });
+    await prisma.property.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({
+      message: 'Property deleted successfully',
+    });
   } catch (error) {
     console.error('Delete property error:', error);
     return NextResponse.json(

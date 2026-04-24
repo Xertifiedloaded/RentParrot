@@ -46,20 +46,22 @@ export default function DashboardPage() {
     if (!loading && !user) router.push('/login');
   }, [user, loading, router]);
 
-  useEffect(() => {
-    if (!user) return;
-    Promise.all([
-      fetch('/api/properties').then((r) => r.json()),
-      fetch(`/api/reviews?userId=${user.id}`).then((r) => r.json()),
-    ]).then(([propData, revData]) => {
-      const filtered = (propData.properties || []).filter(
-        (p: Property) => p.user?.id === user.id,
-      );
-      setMyProperties(filtered);
-      setMyReviews(revData.reviews || []);
-      setDataLoading(false);
-    });
-  }, [user]);
+useEffect(() => {
+  if (!user) return;
+
+  Promise.all([
+    fetch('/api/properties').then((r) => r.json()),
+    fetch(`/api/reviews?userId=${user.userId}`).then((r) => r.json()),
+  ]).then(([propData, revData]) => {
+    const filtered = (propData.properties || []).filter(
+      (p: Property) => p.user?.id === user.userId,
+    );
+
+    setMyProperties(filtered);
+    setMyReviews(revData.reviews || []);
+    setDataLoading(false);
+  });
+}, [user]);
 
   const handleDeleteProperty = async (propertyId: string) => {
     if (!confirm('Delete this property and all its reviews?')) return;

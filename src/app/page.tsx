@@ -26,7 +26,7 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto w-full max-w-6xl">
           <div className="max-w-3xl">
             {/* Eyebrow */}
-            <div className="animate-fadeslide a-d0 opacity-0 mb-6 inline-flex items-center gap-2 rounded-full bg-white/[0.05] px-3 py-1.5 ring-1 ring-white/[0.09]">
+            <div className="animate-fadeslide a-d0 opacity-0 mb-6 inline-flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 ring-1 ring-white/[0.09]">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
               <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/40 sm:text-[11px]">
                 🇳🇬 Tenant Insights for Nigeria

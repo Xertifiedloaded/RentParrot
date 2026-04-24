@@ -67,10 +67,16 @@ export interface Property {
   id: string;
   name: string;
   address: string;
+  town?: string;
+  community?: string;
+  nearestBusStop?: string;
+  postalCode?: string;
   state: string;
   latitude: number;
   longitude: number;
   description?: string;
+  imageUrl?: string | null;
+  imagePublicId?: string | null;
   createdAt: string;
   user?: { id: string; email: string; name: string };
   reviews?: Review[];
@@ -149,6 +155,7 @@ export interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  confirmReset: (token: string, password: string) => Promise<void>;
 }
 
 export interface Props {

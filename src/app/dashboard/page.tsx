@@ -4,9 +4,33 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
-import { Property, Review, CATEGORY_LABELS } from '@/types';
+import { Property, Review, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
+
+function StatCard({
+  icon,
+  value,
+  label,
+}: {
+  icon: string;
+  value: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center gap-4 rounded-xl bg-white/3 p-5 ring-1 ring-white/[0.07] transition-all hover:bg-white/[0.05]">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-xl ring-1 ring-amber-500/20">
+        {icon}
+      </div>
+      <div>
+        <div className="text-xl font-bold text-white/90">{value}</div>
+        <div className="mt-0.5 text-[11px] uppercase tracking-widest text-white/30">
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -29,7 +53,7 @@ export default function DashboardPage() {
       fetch(`/api/reviews?userId=${user.id}`).then((r) => r.json()),
     ]).then(([propData, revData]) => {
       const filtered = (propData.properties || []).filter(
-        (p: Property) => p.user?.id === user.id,  // fix: use p.user?.id
+        (p: Property) => p.user?.id === user.id,
       );
       setMyProperties(filtered);
       setMyReviews(revData.reviews || []);
@@ -51,254 +75,260 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading || !user)
+  if (loading || !user) {
     return (
-      <div className="loader-wrap">
-        <div className="loader" />
+      <div className="flex h-screen items-center justify-center bg-[#0c0f14]">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-amber-500" />
       </div>
     );
+  }
+
+  const memberSince = formatDistanceToNow(
+    new Date((user as any).createdAt || Date.now()),
+    { addSuffix: true },
+  );
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">Welcome back, {user.name}</p>
-      </div>
-
-      {/* Stats */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '16px',
-          marginBottom: '32px',
-        }}
-      >
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">🏢</div>
-          <div>
-            <div className="dash-stat-value">
-              {dataLoading ? '–' : myProperties.length}
+    <div className="min-h-screen bg-[#0c0f14] font-['Geist_Mono','IBM_Plex_Mono',monospace] text-white">
+      {/* Page header */}
+      <div className="border-b border-white/6 bg-[#0e1117]">
+        <div className="mx-auto max-w-4xl px-6 py-8">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">
+                Dashboard
+              </p>
+              <h1 className="text-2xl font-bold text-white/90">
+                Welcome back,{' '}
+                <span className="text-amber-400">{user.name}</span>
+              </h1>
             </div>
-            <div className="dash-stat-label">Properties Listed</div>
-          </div>
-        </div>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">💬</div>
-          <div>
-            <div className="dash-stat-value">
-              {dataLoading ? '–' : myReviews.length}
+            {/* Avatar */}
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/10 text-lg font-bold text-amber-400 ring-1 ring-amber-500/30">
+              {user.name?.charAt(0).toUpperCase()}
             </div>
-            <div className="dash-stat-label">Reviews Written</div>
-          </div>
-        </div>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon">📅</div>
-          <div>
-            <div
-              className="dash-stat-value"
-              style={{ fontSize: '14px', fontWeight: 600 }}
-            >
-              {formatDistanceToNow(
-                new Date(
-                  user ? (user as any).createdAt || Date.now() : Date.now(),
-                ),
-                { addSuffix: true },
-              )}
-            </div>
-            <div className="dash-stat-label">Member Since</div>
           </div>
         </div>
       </div>
 
-      {/* Quick actions */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '10px',
-          marginBottom: '32px',
-          flexWrap: 'wrap',
-        }}
-      >
-        <Link href="/post-property" className="btn btn-primary">
-          + Add Property
-        </Link>
-        <Link href="/post-review" className="btn btn-outline">
-          + Write Review
-        </Link>
-        <Link href="/properties" className="btn btn-ghost">
-          Browse All Properties
-        </Link>
-      </div>
-
-      {/* Tabs */}
-      <div className="tabs">
-        <button
-          className={`tab-btn ${activeTab === 'properties' ? 'active' : ''}`}
-          onClick={() => setActiveTab('properties')}
-        >
-          My Properties ({myProperties.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reviews')}
-        >
-          My Reviews ({myReviews.length})
-        </button>
-      </div>
-
-      {dataLoading ? (
-        <div className="loader-wrap">
-          <div className="loader" />
+      <div className="mx-auto max-w-4xl px-6 py-8 space-y-8">
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <StatCard
+            icon="🏢"
+            value={dataLoading ? '–' : myProperties.length}
+            label="Properties Listed"
+          />
+          <StatCard
+            icon="💬"
+            value={dataLoading ? '–' : myReviews.length}
+            label="Reviews Written"
+          />
+          <StatCard
+            icon="📅"
+            value={<span className="text-base">{memberSince}</span>}
+            label="Member Since"
+          />
         </div>
-      ) : activeTab === 'properties' ? (
-        myProperties.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-state-icon">🏘️</span>
-            <div className="empty-state-title">No properties yet</div>
-            <div className="empty-state-desc">
-              Add a Lagos property to start collecting reviews.
-            </div>
-            <Link href="/post-property" className="btn btn-primary">
-              Add Your First Property
-            </Link>
-          </div>
-        ) : (
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+
+        {/* Quick actions */}
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/post-property"
+            className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-amber-400 active:scale-[0.98]"
           >
-            {myProperties.map((p) => (
-              <div
-                key={p.id}
-                className="card"
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '12px',
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-display)',
-                      fontWeight: 700,
-                      marginBottom: '4px',
-                    }}
-                  >
-                    {p.name}
-                  </div>
-                  <div
-                    style={{ fontSize: '13px', color: 'var(--text-secondary)' }}
-                  >
-                    📍 {p.address}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--text-muted)',
-                      marginTop: '4px',
-                    }}
-                  >
-                    Added{' '}
-                    {formatDistanceToNow(new Date(p.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <Link
-                    href={`/properties/${p.id}`}
-                    className="btn btn-outline btn-sm"
-                  >
-                    View
-                  </Link>
-                  <button
-                    className="btn btn-sm"
-                    style={{
-                      background: 'rgba(239,68,68,0.1)',
-                      color: 'var(--red)',
-                      border: '1px solid rgba(239,68,68,0.2)',
-                    }}
-                    onClick={() => handleDeleteProperty(p.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      ) : myReviews.length === 0 ? (
-        <div className="empty-state">
-          <span className="empty-state-icon">💬</span>
-          <div className="empty-state-title">No reviews yet</div>
-          <div className="empty-state-desc">
-            Share your rental experiences to help others.
-          </div>
-          <Link href="/post-review" className="btn btn-primary">
-            Write Your First Review
+            <span>+</span> Add Property
+          </Link>
+          <Link
+            href="/post-review"
+            className="flex items-center gap-2 rounded-lg bg-white/[0.05] px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/60 ring-1 ring-white/[0.09] transition-all hover:bg-white/[0.09] hover:text-white/80"
+          >
+            <span>+</span> Write Review
+          </Link>
+          <Link
+            href="/properties"
+            className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/30 transition-all hover:text-white/60"
+          >
+            Browse All →
           </Link>
         </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {myReviews.map((r) => (
-            <div key={r.id} className="card">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '8px',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                }}
-              >
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {r.categories.map((cat) => (
-                    <span
-                      key={cat}
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        background: 'var(--bg-elevated)',
-                        padding: '3px 10px',
-                        borderRadius: '20px',
-                        color: 'var(--text-secondary)',
-                      }}
-                    >
-                      {CATEGORY_LABELS[cat]}
-                    </span>
-                  ))}
-                </div>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                  {formatDistanceToNow(new Date(r.createdAt), {
-                    addSuffix: true,
-                  })}
-                </span>
-              </div>
-              <p
-                style={{
-                  fontSize: '14px',
-                  color: 'var(--text-secondary)',
-                  marginBottom: '8px',
-                }}
-              >
-                {r.comment}
-              </p>
-              {r.property && (
-                <Link
-                  href={`/properties/${r.property.id}`}
-                  style={{ fontSize: '12px', color: 'var(--accent)' }}
+
+        {/* Tabs + content */}
+        <div>
+          {/* Tab bar */}
+          <div className="mb-5 flex gap-1 rounded-lg bg-white/3 p-1 ring-1 ring-white/6 w-fit">
+            {(['properties', 'reviews'] as const).map((tab) => {
+              const count =
+                tab === 'properties' ? myProperties.length : myReviews.length;
+              const active = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center gap-2 rounded-md px-4 py-2 text-xs font-semibold uppercase tracking-widest transition-all ${
+                    active
+                      ? 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/30'
+                      : 'text-white/30 hover:text-white/60'
+                  }`}
                 >
-                  📍 {r.property.name}
-                </Link>
-              )}
+                  {tab === 'properties' ? 'Properties' : 'Reviews'}
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                      active
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : 'bg-white/6 text-white/25'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Content */}
+          {dataLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-amber-500" />
             </div>
-          ))}
+          ) : activeTab === 'properties' ? (
+            myProperties.length === 0 ? (
+              <EmptyState
+                icon="🏘️"
+                title="No properties yet"
+                desc="Add a Lagos property to start collecting reviews."
+                cta={{
+                  label: 'Add Your First Property',
+                  href: '/post-property',
+                }}
+              />
+            ) : (
+              <ul className="space-y-2">
+                {myProperties.map((p) => (
+                  <li
+                    key={p.id}
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-white/[0.03] px-5 py-4 ring-1 ring-white/[0.07] transition-all hover:bg-white/[0.05]"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-white/85">
+                        {p.name}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-white/35">
+                        📍 {p.address}
+                      </p>
+                      <p className="mt-1 text-[10px] uppercase tracking-wider text-white/20">
+                        Added{' '}
+                        {formatDistanceToNow(new Date(p.createdAt), {
+                          addSuffix: true,
+                        })}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Link
+                        href={`/properties/${p.id}`}
+                        className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/50 ring-1 ring-white/[0.09] transition-all hover:bg-white/[0.09] hover:text-white/75"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        href={`/properties/${p.id}/edit`}
+                        className="rounded-lg bg-white/5 px-3 py-1.5 text-xs font-semibold text-green-300 ring-1 ring-white/9 transition-all hover:bg-white/9 hover:text-white/75"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteProperty(p.id)}
+                        className="rounded-lg bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400 ring-1 ring-red-500/20 transition-all hover:bg-red-500/20"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : myReviews.length === 0 ? (
+            <EmptyState
+              icon="💬"
+              title="No reviews yet"
+              desc="Share your rental experiences to help others."
+              cta={{ label: 'Write Your First Review', href: '/post-review' }}
+            />
+          ) : (
+            <ul className="space-y-2">
+              {myReviews.map((r) => (
+                <li
+                  key={r.id}
+                  className="rounded-xl bg-white/3 px-5 py-4 ring-1 ring-white/[0.07] transition-all hover:bg-white/[0.05]"
+                >
+                  {/* Header row */}
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.categories.map((cat) => (
+                        <span
+                          key={cat}
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest ${
+                            CATEGORY_COLORS[cat] ??
+                            'bg-white/5 text-white/30 ring-1 ring-white/10'
+                          }`}
+                        >
+                          {CATEGORY_LABELS[cat]}
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-[10px] uppercase tracking-wider text-white/20">
+                      {formatDistanceToNow(new Date(r.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Comment */}
+                  <p className="text-sm leading-relaxed text-white/50">
+                    {r.comment}
+                  </p>
+
+                  {/* Property link */}
+                  {r.property && (
+                    <Link
+                      href={`/properties/${r.property.id}`}
+                      className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-400/70 transition-colors hover:text-amber-400"
+                    >
+                      📍 {r.property.name}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({
+  icon,
+  title,
+  desc,
+  cta,
+}: {
+  icon: string;
+  title: string;
+  desc: string;
+  cta: { label: string; href: string };
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 rounded-xl bg-white/[0.02] py-16 text-center ring-1 ring-white/[0.05]">
+      <span className="text-4xl opacity-20">{icon}</span>
+      <p className="text-sm font-semibold text-white/40">{title}</p>
+      <p className="text-xs text-white/20">{desc}</p>
+      <Link
+        href={cta.href}
+        className="mt-2 rounded-lg bg-amber-500 px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-amber-400"
+      >
+        {cta.label}
+      </Link>
     </div>
   );
 }

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import { LAGOS_HINTS, NIGERIAN_STATES } from '@/lib';
 import { X, UploadCloud } from 'lucide-react';
+import { Property } from '@/types';
 
 function Field({
   label,
@@ -32,10 +33,14 @@ function Field({
 const inputCls =
   'w-full rounded-lg bg-white/[0.04] px-3.5 py-2.5 text-sm text-white/80 placeholder-white/20 ring-1 ring-white/[0.08] outline-none transition focus:bg-white/[0.06] focus:ring-amber-500/40';
 
-export default function PostPropertyPage() {
-  const { user, loading } = useAuth();
+export default function EditPropertyPage() {
+  const { id } = useParams<{ id: string }>();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [property, setProperty] = useState<Property | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [form, setForm] = useState({
     name: '',
@@ -49,11 +54,39 @@ export default function PostPropertyPage() {
     longitude: '',
     description: '',
   });
+
+  // Image state
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch(`/api/properties/${id}`)
+      .then((r) => r.json())
+      .then(({ property: p }) => {
+        if (!p) return;
+        setProperty(p);
+        setForm({
+          name: p.name ?? '',
+          address: p.address ?? '',
+          town: p.town ?? '',
+          community: p.community ?? '',
+          nearestBusStop: p.nearestBusStop ?? '',
+          postalCode: p.postalCode ?? '',
+          state: p.state ?? 'Lagos',
+          latitude: String(p.latitude ?? ''),
+          longitude: String(p.longitude ?? ''),
+          description: p.description ?? '',
+        });
+        setExistingImageUrl(p.imageUrl ?? null);
+      })
+      .finally(() => setPageLoading(false));
+  }, [id]);
 
   const set =
     (key: string) =>
@@ -73,11 +106,13 @@ export default function PostPropertyPage() {
     }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setRemoveImage(false);
   };
 
-  const removeImage = () => {
+  const handleRemoveImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setRemoveImage(true);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -112,9 +147,7 @@ export default function PostPropertyPage() {
         }));
         toast.success(`Found: ${data.results[0].formatted_address}`);
       } else {
-        toast.error(
-          'Address not found. Try being more specific or enter coordinates manually.',
-        );
+        toast.error('Address not found.');
       }
     } catch {
       toast.error('Geocoding failed');
@@ -138,19 +171,19 @@ export default function PostPropertyPage() {
     }
     setSubmitting(true);
     try {
-      // Always use FormData so we can optionally attach an image
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       if (imageFile) fd.append('image', imageFile);
+      if (removeImage) fd.append('removeImage', 'true');
 
-      const res = await fetch('/api/properties', {
-        method: 'POST',
+      const res = await fetch(`/api/properties/${id}`, {
+        method: 'PATCH',
         body: fd,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create property');
-      toast.success('Property added!');
-      router.push(`/properties/${data.property.id}`);
+      if (!res.ok) throw new Error(data.error || 'Failed to update property');
+      toast.success('Property updated!');
+      router.push(`/properties/${id}`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -158,7 +191,7 @@ export default function PostPropertyPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading || pageLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#0c0f14]">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-amber-500" />
@@ -166,44 +199,43 @@ export default function PostPropertyPage() {
     );
   }
 
-  if (!user) {
+  if (!user || (property && (property as any).userId !== (user as any).id)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#0c0f14] px-4">
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="text-5xl opacity-20">🔒</div>
-          <p className="text-base font-semibold text-white/50">
-            Sign in required
-          </p>
-          <p className="text-sm text-white/25">
-            You need to be signed in to post a property.
-          </p>
+          <p className="text-base font-semibold text-white/50">Access denied</p>
           <Link
-            href="/login"
-            className="mt-2 rounded-lg bg-amber-500 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black hover:bg-amber-400 transition-all"
+            href="/properties"
+            className="text-sm text-amber-400 hover:text-amber-300"
           >
-            Sign In
+            ← Back to Properties
           </Link>
         </div>
       </div>
     );
   }
 
+  const displayImage = removeImage ? null : (imagePreview ?? existingImageUrl);
+
   return (
-    <div className="min-h-screen bg-[#0c0f14] font-['Geist_Mono',_'IBM_Plex_Mono',_monospace] text-white">
-      {/* Page header */}
-      <div className="border-b border-white/[0.06] bg-[#0e1117]">
-        <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="min-h-screen bg-[#0c0f14] font-['Geist_Mono','IBM_Plex_Mono',monospace] text-white">
+      <div className="border-b border-white/6 bg-[#0e1117]">
+        <div className="mx-auto max-w-5xl px-6 py-8">
+          <Link
+            href={`/properties/${id}`}
+            className="mb-2 inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors"
+          >
+            ← Property
+          </Link>
           <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">
-            New Listing
+            Edit Listing
           </p>
-          <h1 className="text-2xl font-bold text-white/90">Add a Property</h1>
-          <p className="mt-1 text-sm text-white/30">
-            List a property to collect tenant reviews
-          </p>
+          <h1 className="text-2xl font-bold text-white/90">Edit Property</h1>
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-6 py-8 space-y-4">
+      <div className="mx-auto max-w-5xl px-6 py-8 space-y-4">
         {error && (
           <div className="flex items-start gap-3 rounded-lg bg-red-500/10 px-4 py-3 ring-1 ring-red-500/20">
             <span className="mt-0.5 text-red-400">⚠</span>
@@ -213,9 +245,9 @@ export default function PostPropertyPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl bg-white/[0.03] ring-1 ring-white/[0.07] divide-y divide-white/[0.05]"
+          className="rounded-xl bg-white/3 ring-1 ring-white/[0.07] divide-y divide-white/5"
         >
-          {/* Section: Identity */}
+          {/* Identity */}
           <div className="px-6 py-5 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
               Property Identity
@@ -223,7 +255,6 @@ export default function PostPropertyPage() {
             <Field label="Property Name" required>
               <input
                 type="text"
-                placeholder="e.g. Sunshine Apartments, Lekki Phase 1"
                 value={form.name}
                 onChange={set('name')}
                 required
@@ -232,7 +263,7 @@ export default function PostPropertyPage() {
             </Field>
           </div>
 
-          {/* Section: Photo */}
+          {/* Photo */}
           <div className="px-6 py-5 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
               Photo{' '}
@@ -241,25 +272,35 @@ export default function PostPropertyPage() {
               </span>
             </p>
 
-            {imagePreview ? (
+            {displayImage ? (
               <div
                 className="relative w-full rounded-xl overflow-hidden ring-1 ring-white/[0.08]"
                 style={{ aspectRatio: '16/9' }}
               >
                 <Image
-                  src={imagePreview}
-                  alt="Property preview"
+                  src={displayImage}
+                  alt="Property"
                   fill
                   className="object-cover"
                 />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white/80 hover:bg-black/80 hover:text-white transition-all"
-                  aria-label="Remove image"
-                >
-                  <X size={14} />
-                </button>
+                <div className="absolute top-2 right-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 rounded-lg bg-black/60 px-3 py-1.5 text-[11px] font-semibold text-white/80 hover:bg-black/80 transition-all"
+                  >
+                    <UploadCloud size={12} />
+                    Replace
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white/80 hover:bg-red-500/80 hover:text-white transition-all"
+                    aria-label="Remove image"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
             ) : (
               <button
@@ -286,7 +327,7 @@ export default function PostPropertyPage() {
             />
           </div>
 
-          {/* Section: Location */}
+          {/* Location */}
           <div className="px-6 py-5 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
               Location
@@ -296,7 +337,6 @@ export default function PostPropertyPage() {
                 <Field label="Street Address" required>
                   <input
                     type="text"
-                    placeholder="e.g. 14 Admiralty Way"
                     value={form.address}
                     onChange={set('address')}
                     required
@@ -324,7 +364,6 @@ export default function PostPropertyPage() {
               <Field label="Town / Area" required>
                 <input
                   type="text"
-                  placeholder="e.g. Lekki, Ikeja, Yaba"
                   value={form.town}
                   onChange={set('town')}
                   required
@@ -334,7 +373,6 @@ export default function PostPropertyPage() {
               <Field label="Community / Estate">
                 <input
                   type="text"
-                  placeholder="e.g. Gowon Estate, Lekki Phase 1"
                   value={form.community}
                   onChange={set('community')}
                   className={inputCls}
@@ -346,7 +384,6 @@ export default function PostPropertyPage() {
               <Field label="Nearest Bus Stop / Landmark">
                 <input
                   type="text"
-                  placeholder="e.g. Cele Bus Stop, Under Bridge"
                   value={form.nearestBusStop}
                   onChange={set('nearestBusStop')}
                   className={inputCls}
@@ -355,7 +392,6 @@ export default function PostPropertyPage() {
               <Field label="Postal Code">
                 <input
                   type="text"
-                  placeholder="e.g. 100001"
                   value={form.postalCode}
                   onChange={set('postalCode')}
                   className={inputCls}
@@ -364,7 +400,7 @@ export default function PostPropertyPage() {
             </div>
           </div>
 
-          {/* Section: Coordinates */}
+          {/* Coordinates */}
           <div className="px-6 py-5 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
               Coordinates
@@ -391,7 +427,6 @@ export default function PostPropertyPage() {
                 <input
                   type="number"
                   step="any"
-                  placeholder="6.4281"
                   value={form.latitude}
                   onChange={set('latitude')}
                   required
@@ -402,7 +437,6 @@ export default function PostPropertyPage() {
                 <input
                   type="number"
                   step="any"
-                  placeholder="3.4219"
                   value={form.longitude}
                   onChange={set('longitude')}
                   required
@@ -422,14 +456,13 @@ export default function PostPropertyPage() {
             )}
           </div>
 
-          {/* Section: Description */}
+          {/* Description */}
           <div className="px-6 py-5 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
               Description
             </p>
             <Field label="About this property">
               <textarea
-                placeholder="Briefly describe this property or estate…"
                 value={form.description}
                 onChange={set('description')}
                 rows={4}
@@ -441,7 +474,7 @@ export default function PostPropertyPage() {
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 px-6 py-4">
             <Link
-              href="/properties"
+              href={`/properties/${id}`}
               className="rounded-lg px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/30 transition-all hover:text-white/60"
             >
               Cancel
@@ -454,10 +487,10 @@ export default function PostPropertyPage() {
               {submitting ? (
                 <>
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border border-black/20 border-t-black/70" />
-                  Adding…
+                  Saving…
                 </>
               ) : (
-                'Add Property'
+                'Save Changes'
               )}
             </button>
           </div>

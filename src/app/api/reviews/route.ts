@@ -42,7 +42,9 @@ export async function POST(request: NextRequest) {
 
     if (!propertyId || !categories?.length || !comment) {
       return NextResponse.json(
-        { error: 'Property ID, at least one category, and comment are required' },
+        {
+          error: 'Property ID, at least one category, and comment are required',
+        },
         { status: 400 },
       );
     }
@@ -52,12 +54,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!property) {
-      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Property not found' },
+        { status: 404 },
+      );
     }
 
     const review = await prisma.review.create({
       data: {
-        categories,   // ← store the whole array
+        categories, // ← store the whole array
         comment,
         userId: authUser.userId,
         propertyId,
@@ -70,6 +75,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ review }, { status: 201 });
   } catch (error) {
     console.error('Create review error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }

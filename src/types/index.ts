@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 export type Category =
   | 'GOOD_ELECTRICITY'
   | 'BAD_ELECTRICITY'
@@ -66,7 +67,7 @@ export interface Property {
   id: string;
   name: string;
   address: string;
-  state: string;       
+  state: string;
   latitude: number;
   longitude: number;
   description?: string;
@@ -78,7 +79,7 @@ export interface Property {
 
 export interface Review {
   id: string;
-  categories: Category[];  
+  categories: Category[];
   comment: string;
   createdAt: string;
   user?: { id: string; name: string };
@@ -90,3 +91,77 @@ export interface AuthUser {
   email: string;
   name: string;
 }
+
+export interface Feature {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
+export interface Step {
+  n: string;
+  title: string;
+  desc: string;
+  icon: ReactNode;
+}
+
+export interface Testimonial {
+  initials: string;
+  name: string;
+  area: string;
+  tenure: string;
+  stars: number;
+  text: string;
+  tag: string;
+  accent: string;
+}
+
+export interface MapProps {
+  properties?: Property[];
+  center?: { lat: number; lng: number };
+  zoom?: number;
+  onMarkerClick?: (property: Property) => void;
+  onMapClick?: (lat: number, lng: number, state?: string) => void;
+  userLocation?: { lat: number; lng: number };
+  showHeatmap?: boolean;
+  singleProperty?: Property;
+}
+
+export const CATEGORY_TAILWIND: Record<string, string> = {
+  noise: 'bg-rose-500/10 text-rose-300 ring-1 ring-rose-500/20',
+  security: 'bg-sky-500/10 text-sky-300 ring-1 ring-sky-500/20',
+  landlord: 'bg-violet-500/10 text-violet-300 ring-1 ring-violet-500/20',
+  infrastructure: 'bg-amber-500/10 text-amber-300 ring-1 ring-amber-500/20',
+  flooding: 'bg-blue-500/10 text-blue-300 ring-1 ring-blue-500/20',
+};
+
+export type Tab = 'all' | 'positive' | 'negative';
+export type PermissionState =
+  | 'loading'
+  | 'prompt'
+  | 'granted'
+  | 'denied'
+  | 'unavailable';
+export interface AuthContextType {
+  user: AuthUser | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+}
+
+export interface Props {
+  target: number;
+  suffix?: string;
+  duration?: number; // ms
+  className?: string;
+}
+
+export type LocationState = 'prompt' | 'requesting' | 'granted' | 'denied';
+
+export const LISTING_TYPE_COLORS: Record<string, string> = {
+  Rent: 'bg-sky-500/15 text-sky-300 ring-1 ring-sky-500/30',
+  Sale: 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/30',
+  Shortlet: 'bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/30',
+};

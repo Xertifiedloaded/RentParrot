@@ -3,12 +3,17 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import './globals.css';
-import { LocationPermission } from '@/components/location-permission';
 
 export const metadata: Metadata = {
   title: 'Know Before You Rent – Nigerian Tenant Insight Platform',
   description:
     'Make informed rental decisions in Nigeria with real tenant reviews.',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -17,11 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" style={{ overflowX: 'hidden', maxWidth: '100%' }}>
+      <body
+        style={{ overflowX: 'hidden', maxWidth: '100%', position: 'relative' }}
+      >
         <AuthProvider>
           <Navbar />
-          <main className="main-content">{children}</main>
+          <main className="min-h-[calc(100vh-64px)]">{children}</main>
           <Toaster
             position="bottom-right"
             toastOptions={{
@@ -34,7 +41,6 @@ export default function RootLayout({
               },
             }}
           />
-                {/* <LocationPermission /> */}
         </AuthProvider>
       </body>
     </html>

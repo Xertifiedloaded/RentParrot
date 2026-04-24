@@ -28,21 +28,28 @@ model User {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
   properties Property[]
   reviews    Review[]
 }
 
 model Property {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  address     String
-  state       String   @default("Lagos")
-  latitude    Float
-  longitude   Float
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  address        String
+  town           String
+  community      String?
+  nearestBusStop String?
+  postalCode     String?
+  state          String   @default("Lagos")
+  latitude       Float
+  longitude      Float
+  description    String?
+  imageUrl       String?
+  imagePublicId  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   userId  String   @db.ObjectId
   user    User     @relation(fields: [userId], references: [id])
@@ -55,7 +62,6 @@ model Review {
   comment    String
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
-
   userId     String   @db.ObjectId
   user       User     @relation(fields: [userId], references: [id])
   propertyId String   @db.ObjectId

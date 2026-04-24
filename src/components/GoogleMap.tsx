@@ -2,17 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Property } from '@/types';
-
-interface MapProps {
-  properties?: Property[];
-  center?: { lat: number; lng: number };
-  zoom?: number;
-  onMarkerClick?: (property: Property) => void;
-  onMapClick?: (lat: number, lng: number) => void;
-  userLocation?: { lat: number; lng: number };
-  showHeatmap?: boolean;
-  singleProperty?: Property;
-}
+import { MapProps } from '../types/index';
 
 declare global {
   interface Window {
@@ -30,30 +20,43 @@ export default function GoogleMap({
   userLocation,
   showHeatmap = false,
   singleProperty,
-}: MapProps) {
+  focusedProperty,
+}: MapProps & { focusedProperty?: Property | null }) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
-  const heatmapRef = useRef<google.maps.visualization.HeatmapLayer | null>(null);
+  const heatmapRef = useRef<google.maps.visualization.HeatmapLayer | null>(
+    null,
+  );
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const clickMarkerRef = useRef<google.maps.Circle | null>(null);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
-  // Keep a stable ref so the map-click effect doesn't re-run on every render
   const onMapClickRef = useRef(onMapClick);
-  useEffect(() => { onMapClickRef.current = onMapClick; }, [onMapClick]);
+  useEffect(() => {
+    onMapClickRef.current = onMapClick;
+  }, [onMapClick]);
 
-  const stableOnMapClick = useCallback((lat: number, lng: number) => {
-    onMapClickRef.current?.(lat, lng);
-  }, []);
+  const stableOnMapClick = useCallback(
+    (lat: number, lng: number, state?: string) => {
+      onMapClickRef.current?.(lat, lng, state);
+    },
+    [],
+  );
 
-  // ── Load Google Maps script ──────────────────────────────────────────────
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey || apiKey === 'your-google-maps-api-key') { setError(true); return; }
-    if (window.google?.maps) { setLoaded(true); return; }
+    if (!apiKey || apiKey === 'your-google-maps-api-key') {
+      setError(true);
+      return;
+    }
+    if (window.google?.maps) {
+      setLoaded(true);
+      return;
+    }
     window.initGoogleMaps = () => setLoaded(true);
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=visualization&callback=initGoogleMaps`;
@@ -74,84 +77,153 @@ export default function GoogleMap({
       center: mapCenter,
       zoom: singleProperty ? 15 : zoom,
       styles: [
-        { elementType: 'geometry',              stylers: [{ color: '#f4f4f5' }] },
-        { elementType: 'labels.text.stroke',    stylers: [{ color: '#f4f4f5' }] },
-        { elementType: 'labels.text.fill',      stylers: [{ color: '#52525b' }] },
-        { featureType: 'administrative',        elementType: 'geometry.stroke', stylers: [{ color: '#d4d4d8' }] },
-        { featureType: 'road',                  elementType: 'geometry',        stylers: [{ color: '#e4e4e7' }] },
-        { featureType: 'road',                  elementType: 'labels.text.fill',stylers: [{ color: '#71717a' }] },
-        { featureType: 'road.highway',          elementType: 'geometry',        stylers: [{ color: '#d4d4d8' }] },
-        { featureType: 'water',                 elementType: 'geometry',        stylers: [{ color: '#bfdbfe' }] },
-        { featureType: 'water',                 elementType: 'labels.text.fill',stylers: [{ color: '#60a5fa' }] },
-        { featureType: 'poi',                                                    stylers: [{ visibility: 'off' }] },
-        { featureType: 'poi.park',              elementType: 'geometry',        stylers: [{ color: '#dcfce7' }] },
-        { featureType: 'landscape.natural',     elementType: 'geometry',        stylers: [{ color: '#f0fdf4' }] },
+        { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
+        { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1a2e' }] },
+        { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+        {
+          featureType: 'administrative.locality',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#d59563' }],
+        },
+        {
+          featureType: 'poi',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#d59563' }],
+        },
+        {
+          featureType: 'poi.park',
+          elementType: 'geometry',
+          stylers: [{ color: '#263c3f' }],
+        },
+        {
+          featureType: 'poi.park',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#6b9a76' }],
+        },
+        {
+          featureType: 'road',
+          elementType: 'geometry',
+          stylers: [{ color: '#38414e' }],
+        },
+        {
+          featureType: 'road',
+          elementType: 'geometry.stroke',
+          stylers: [{ color: '#212a37' }],
+        },
+        {
+          featureType: 'road',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#9ca5b3' }],
+        },
+        {
+          featureType: 'road.highway',
+          elementType: 'geometry',
+          stylers: [{ color: '#746855' }],
+        },
+        {
+          featureType: 'road.highway',
+          elementType: 'geometry.stroke',
+          stylers: [{ color: '#1f2835' }],
+        },
+        {
+          featureType: 'road.highway',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#f3d19c' }],
+        },
+        {
+          featureType: 'transit',
+          elementType: 'geometry',
+          stylers: [{ color: '#2f3948' }],
+        },
+        {
+          featureType: 'transit.station',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#d59563' }],
+        },
+        {
+          featureType: 'water',
+          elementType: 'geometry',
+          stylers: [{ color: '#17263c' }],
+        },
+        {
+          featureType: 'water',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#515c6d' }],
+        },
+        {
+          featureType: 'water',
+          elementType: 'labels.text.stroke',
+          stylers: [{ color: '#17263c' }],
+        },
       ],
+      disableDefaultUI: true,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM,
+      },
     });
+
+    infoWindowRef.current = new google.maps.InfoWindow();
 
     if (onMapClick) {
-      mapInstanceRef.current.addListener('click', (e: google.maps.MapMouseEvent) => {
-        if (!e.latLng) return;
-        const lat = e.latLng.lat();
-        const lng = e.latLng.lng();
+      mapInstanceRef.current.addListener(
+        'click',
+        (e: google.maps.MapMouseEvent) => {
+          if (!e.latLng) return;
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
 
-        if (clickMarkerRef.current) clickMarkerRef.current.setMap(null);
+          if (clickMarkerRef.current) clickMarkerRef.current.setMap(null);
 
-        // 2 km search-area indicator
-        clickMarkerRef.current = new google.maps.Circle({
-          center: { lat, lng },
-          radius: 2000,
-          map: mapInstanceRef.current!,
-          fillColor: '#18181b',
-          fillOpacity: 0.06,
-          strokeColor: '#18181b',
-          strokeOpacity: 0.25,
-          strokeWeight: 1.5,
-        });
+          clickMarkerRef.current = new google.maps.Circle({
+            center: { lat, lng },
+            radius: 2000,
+            map: mapInstanceRef.current!,
+            fillColor: '#f59e0b',
+            fillOpacity: 0.07,
+            strokeColor: '#f59e0b',
+            strokeOpacity: 0.3,
+            strokeWeight: 1.5,
+          });
 
-        stableOnMapClick(lat, lng);
-      });
+          const geocoder = new google.maps.Geocoder();
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            let detectedState: string | undefined;
+            if (status === 'OK' && results?.length) {
+              const stateComp = results[0].address_components.find((c) =>
+                c.types.includes('administrative_area_level_1'),
+              );
+              detectedState = stateComp?.long_name;
+            }
+            stableOnMapClick(lat, lng, detectedState);
+          });
+        },
+      );
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaded, center, zoom, singleProperty, stableOnMapClick]);
+  }, [loaded, center, zoom, singleProperty, stableOnMapClick, onMapClick]);
 
-  // ── User location marker ─────────────────────────────────────────────────
   useEffect(() => {
     if (!mapInstanceRef.current || !userLocation) return;
-
     if (userMarkerRef.current) userMarkerRef.current.setMap(null);
-
-    new google.maps.Circle({
-      center: userLocation,
-      radius: 300,
-      map: mapInstanceRef.current,
-      fillColor: '#3b82f6',
-      fillOpacity: 0.12,
-      strokeColor: '#3b82f6',
-      strokeOpacity: 0.25,
-      strokeWeight: 1,
-    });
 
     userMarkerRef.current = new google.maps.Marker({
       position: userLocation,
       map: mapInstanceRef.current,
+      title: 'Your Location',
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: 9,
+        scale: 8,
         fillColor: '#3b82f6',
         fillOpacity: 1,
         strokeColor: '#ffffff',
-        strokeWeight: 3,
+        strokeWeight: 2,
       },
-      title: 'Your Location',
-      zIndex: 999,
     });
 
     mapInstanceRef.current.panTo(userLocation);
     mapInstanceRef.current.setZoom(14);
-  }, [userLocation, loaded]);
+  }, [userLocation]);
 
-  // ── Property markers ─────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -166,58 +238,66 @@ export default function GoogleMap({
         map: mapInstanceRef.current!,
         title: property.name,
         icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: '#18181b',
+          path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+          fillColor: '#f59e0b',
           fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 2.5,
+          strokeColor: '#1a1a1a',
+          strokeWeight: 1.5,
+          scale: 1.4,
+          anchor: new google.maps.Point(12, 22),
         },
       });
 
-      const infoWindow = new google.maps.InfoWindow({
-        content: `
-          <div style="
-            background:#ffffff;
-            color:#18181b;
-            padding:14px 16px;
-            border-radius:10px;
-            min-width:210px;
-            font-family:ui-sans-serif,system-ui,sans-serif;
-            box-shadow:0 4px 20px rgba(0,0,0,.10);
-            border:1px solid #e4e4e7;
-          ">
-            <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#18181b;">${property.name}</p>
-            <p style="margin:0 0 2px;font-size:12px;color:#71717a;">📍 ${property.address}</p>
-            ${(property as any).state ? `<p style="margin:0 0 4px;font-size:11px;color:#a1a1aa;">${(property as any).state} State</p>` : ''}
-            <p style="margin:0 0 10px;font-size:11px;color:#a1a1aa;">💬 ${property._count?.reviews ?? property.reviews?.length ?? 0} review(s)</p>
-            <a href="/properties/${property.id}" style="
-              display:inline-block;
-              background:#18181b;
-              color:#ffffff;
-              padding:5px 12px;
-              border-radius:6px;
-              font-size:11px;
-              font-weight:600;
-              text-decoration:none;
-            ">View Details →</a>
-          </div>
-        `,
-      });
-
       marker.addListener('click', () => {
-        infoWindow.open(mapInstanceRef.current, marker);
         onMarkerClick?.(property);
+
+        if (infoWindowRef.current) {
+          infoWindowRef.current.setContent(`
+            <div style="background:#1e1e1e;color:#fff;padding:10px 14px;border-radius:8px;font-family:sans-serif;min-width:180px;">
+              <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:4px;">${property.name}</div>
+              <div style="font-size:11px;color:#9ca3af;">${property.address}</div>
+            </div>
+          `);
+          infoWindowRef.current.open(mapInstanceRef.current, marker);
+        }
       });
 
       markersRef.current.push(marker);
     });
   }, [properties, singleProperty, onMarkerClick]);
 
-  // ── Heatmap ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!mapInstanceRef.current || !focusedProperty) return;
+
+    const target = {
+      lat: focusedProperty.latitude,
+      lng: focusedProperty.longitude,
+    };
+    mapInstanceRef.current.panTo(target);
+    mapInstanceRef.current.setZoom(15);
+
+    const focusedMarker = markersRef.current.find((_, i) => {
+      const allProperties = singleProperty ? [singleProperty] : properties;
+      return allProperties[i]?.id === focusedProperty.id;
+    });
+
+    if (focusedMarker && infoWindowRef.current) {
+      infoWindowRef.current.setContent(`
+        <div style="background:#1e1e1e;color:#fff;padding:10px 14px;border-radius:8px;font-family:sans-serif;min-width:180px;">
+          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:4px;">${focusedProperty.name}</div>
+          <div style="font-size:11px;color:#9ca3af;">${focusedProperty.address}</div>
+        </div>
+      `);
+      infoWindowRef.current.open(mapInstanceRef.current, focusedMarker);
+    }
+  }, [focusedProperty, properties, singleProperty]);
+
   useEffect(() => {
     if (!mapInstanceRef.current || !showHeatmap) {
-      if (heatmapRef.current) { heatmapRef.current.setMap(null); heatmapRef.current = null; }
+      if (heatmapRef.current) {
+        heatmapRef.current.setMap(null);
+        heatmapRef.current = null;
+      }
       return;
     }
 
@@ -225,7 +305,7 @@ export default function GoogleMap({
       .then((r) => r.json())
       .then(({ points }) => {
         if (heatmapRef.current) heatmapRef.current.setMap(null);
-        const heatmapData: google.maps.visualization.WeightedLocation[] = points.map(
+        const heatmapData = points.map(
           (p: { lat: number; lng: number; weight: number }) => ({
             location: new google.maps.LatLng(p.lat, p.lng),
             weight: p.weight,
@@ -234,29 +314,17 @@ export default function GoogleMap({
         heatmapRef.current = new google.maps.visualization.HeatmapLayer({
           data: heatmapData,
           map: mapInstanceRef.current!,
-          radius: 40,
-          opacity: 0.65,
-          gradient: [
-            'rgba(0,0,0,0)',
-            'rgba(161,161,170,0.4)',
-            'rgba(82,82,91,0.65)',
-            'rgba(24,24,27,0.9)',
-          ],
         });
       });
-  }, [showHeatmap, loaded]);
+  }, [showHeatmap]);
 
-  // ── Error state ──────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="flex h-full min-h-[360px] w-full items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100">
+      <div className="flex h-full w-full items-center justify-center bg-[#111111]">
         <div className="text-center">
-          <span className="text-4xl">🗺️</span>
-          <p className="mt-2 text-sm font-semibold text-zinc-800">
+          <div className="mb-2 text-3xl">🗺️</div>
+          <p className="text-sm font-medium text-gray-400">
             Google Maps API key required
-          </p>
-          <p className="mt-1 text-xs text-zinc-500">
-            Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env file
           </p>
         </div>
       </div>
@@ -265,11 +333,8 @@ export default function GoogleMap({
 
   if (!loaded) {
     return (
-      <div className="flex h-full min-h-[360px] w-full items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100">
-        <div className="text-center">
-          <div className="mx-auto h-7 w-7 animate-spin rounded-full border-[3px] border-zinc-200 border-t-zinc-800" />
-          <p className="mt-3 text-sm text-zinc-500">Loading map…</p>
-        </div>
+      <div className="flex h-full w-full items-center justify-center bg-[#111111]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-700 border-t-amber-500" />
       </div>
     );
   }

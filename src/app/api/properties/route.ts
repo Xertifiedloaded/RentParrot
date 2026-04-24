@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/auth';
+import { uploadImage } from '@/lib/cloudinary';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+
     const search = searchParams.get('search');
-    const state = searchParams.get('state');   // ← add this
+    const state = searchParams.get('state');
     const lat = searchParams.get('lat');
     const lng = searchParams.get('lng');
     const radius = searchParams.get('radius') || '5';
@@ -26,6 +28,10 @@ export async function GET(request: NextRequest) {
             OR: [
               { name: { contains: search, mode: 'insensitive' } },
               { address: { contains: search, mode: 'insensitive' } },
+              { town: { contains: search, mode: 'insensitive' } },
+              { community: { contains: search, mode: 'insensitive' } },
+              { nearestBusStop: { contains: search, mode: 'insensitive' } },
+              { postalCode: { contains: search, mode: 'insensitive' } },
             ],
           }),
         },
@@ -36,13 +42,16 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
       });
     } else if (search) {
-      // Search ignores state filter — show everything matching
       properties = await prisma.property.findMany({
         where: {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
             { address: { contains: search, mode: 'insensitive' } },
-            { state: { contains: search, mode: 'insensitive' } },  // ← also search by state name
+            { state: { contains: search, mode: 'insensitive' } },
+            { town: { contains: search, mode: 'insensitive' } },
+            { community: { contains: search, mode: 'insensitive' } },
+            { nearestBusStop: { contains: search, mode: 'insensitive' } },
+            { postalCode: { contains: search, mode: 'insensitive' } },
           ],
         },
         include: {
@@ -52,11 +61,12 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
       });
     } else if (state) {
-      // State filter — show only properties in detected state
+      const normalizedState = decodeURIComponent(state)
+        .replace(/\s*State$/i, '')
+        .trim();
+
       properties = await prisma.property.findMany({
-        where: {
-          state: { contains: state, mode: 'insensitive' },
-        },
+        where: { state: { contains: normalizedState, mode: 'insensitive' } },
         include: {
           user: { select: { id: true, email: true, name: true } },
           _count: { select: { reviews: true } },
@@ -77,7 +87,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ properties });
   } catch (error) {
     console.error('Get properties error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }
 
@@ -88,24 +101,75 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { name, address, state, latitude, longitude, description } = body; // ← add state
+    // Support multipart/form-data for image upload OR JSON for backwards compat
+    const contentType = request.headers.get('content-type') || '';
+    let fields: Record<string, string> = {};
+    let imageFile: File | null = null;
 
-    if (!name || !address || latitude === undefined || longitude === undefined) {
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      for (const [key, value] of formData.entries()) {
+        if (key === 'image' && value instanceof File && value.size > 0) {
+          imageFile = value;
+        } else if (typeof value === 'string') {
+          fields[key] = value;
+        }
+      }
+    } else {
+      fields = await request.json();
+    }
+
+    const {
+      name,
+      address,
+      town,
+      community,
+      nearestBusStop,
+      postalCode,
+      state,
+      latitude,
+      longitude,
+      description,
+    } = fields;
+
+    if (
+      !name ||
+      !address ||
+      !town ||
+      latitude === undefined ||
+      longitude === undefined
+    ) {
       return NextResponse.json(
-        { error: 'Name, address, latitude, and longitude are required' },
+        { error: 'Name, address, town, latitude, and longitude are required' },
         { status: 400 },
       );
+    }
+
+    // Upload image to Cloudinary if provided
+    let imageUrl: string | null = null;
+    let imagePublicId: string | null = null;
+
+    if (imageFile) {
+      const buffer = Buffer.from(await imageFile.arrayBuffer());
+      const uploaded = await uploadImage(buffer, imageFile.name);
+      imageUrl = uploaded.url;
+      imagePublicId = uploaded.publicId;
     }
 
     const property = await prisma.property.create({
       data: {
         name,
         address,
-        state: state || 'Lagos',   // ← save it
+        town,
+        community: community || null,
+        nearestBusStop: nearestBusStop || null,
+        postalCode: postalCode || null,
+        state: state || 'Lagos',
         latitude: parseFloat(latitude),
         longitude: parseFloat(longitude),
-        description,
+        description: description || null,
+        imageUrl,
+        imagePublicId,
         userId: authUser.userId,
       },
       include: {
@@ -116,6 +180,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ property }, { status: 201 });
   } catch (error) {
     console.error('Create property error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }

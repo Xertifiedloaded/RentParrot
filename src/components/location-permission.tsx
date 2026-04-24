@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { MapPin, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import { useUserLocation } from '@/hooks/useUserLocation';
-
-type PermissionState = 'loading' | 'prompt' | 'granted' | 'denied' | 'unavailable';
+import { PermissionState } from '../types/index';
 
 export function LocationPermission() {
   const { detectedState } = useUserLocation();
-  const [permissionState, setPermissionState] = useState<PermissionState>('loading');
-  const [isSystemLocationDisabled, setIsSystemLocationDisabled] = useState(false);
+  const [permissionState, setPermissionState] =
+    useState<PermissionState>('loading');
+  const [isSystemLocationDisabled, setIsSystemLocationDisabled] =
+    useState(false);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -19,13 +20,13 @@ export function LocationPermission() {
     }
 
     if (navigator.permissions) {
-      navigator.permissions.query({ name: 'geolocation' }).then((permResult) => {
-        setPermissionState(permResult.state as PermissionState);
-
-        permResult.onchange = () => {
+      navigator.permissions
+        .query({ name: 'geolocation' })
+        .then((permResult) => {
           setPermissionState(permResult.state as PermissionState);
-        };
-      });
+          permResult.onchange = () =>
+            setPermissionState(permResult.state as PermissionState);
+        });
     } else {
       navigator.geolocation.getCurrentPosition(
         () => setPermissionState('granted'),
@@ -36,14 +37,13 @@ export function LocationPermission() {
             setIsSystemLocationDisabled(true);
           } else setPermissionState('prompt');
         },
-        { timeout: 5000 }
+        { timeout: 5000 },
       );
     }
   }, []);
 
   const handleRequestLocation = () => {
     setPermissionState('loading');
-
     navigator.geolocation.getCurrentPosition(
       () => setPermissionState('granted'),
       (error) => {
@@ -53,151 +53,107 @@ export function LocationPermission() {
           setIsSystemLocationDisabled(true);
         } else setPermissionState('prompt');
       },
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
   };
 
   const handleOpenLocationSettings = () => {
     const isMobile = /iPhone|iPad|iPod|Android/.test(navigator.userAgent);
-
     alert(
       isMobile
         ? 'Enable location:\n\niOS: Settings > Privacy > Location Services\nAndroid: Settings > Apps > Permissions > Location'
-        : 'Enable location:\n\nWindows: Settings > Privacy > Location\nmacOS: System Preferences > Security & Privacy > Location Services'
+        : 'Enable location:\n\nWindows: Settings > Privacy > Location\nmacOS: System Preferences > Security & Privacy > Location Services',
     );
   };
 
-  const AlertBox = ({
-    icon,
-    text,
-    bg,
-    border,
-    color,
-  }: {
-    icon: React.ReactNode;
-    text: React.ReactNode;
-    bg: string;
-    border: string;
-    color: string;
-  }) => (
-    <div className={`flex items-start gap-3 rounded-lg border p-4 ${bg} ${border}`}>
-      <div className={color}>{icon}</div>
-      <div className={`text-sm ${color}`}>{text}</div>
-    </div>
-  );
+  const statusVariants = {
+    loading: {
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
+      icon: <Loader className="h-4 w-4 animate-spin text-blue-400" />,
+      text: 'text-blue-300',
+      label: 'Requesting location permission…',
+    },
+    granted: {
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+      icon: <CheckCircle className="h-4 w-4 text-emerald-400" />,
+      text: 'text-emerald-300',
+      label: detectedState
+        ? `Location granted · ${detectedState}`
+        : 'Location access granted',
+    },
+    denied: {
+      bg: 'bg-red-500/10',
+      border: 'border-red-500/20',
+      icon: <AlertCircle className="h-4 w-4 text-red-400" />,
+      text: 'text-red-300',
+      label: isSystemLocationDisabled
+        ? 'Location is disabled on your device.'
+        : 'Location permission was denied.',
+    },
+    unavailable: {
+      bg: 'bg-gray-500/10',
+      border: 'border-gray-500/20',
+      icon: <AlertCircle className="h-4 w-4 text-gray-400" />,
+      text: 'text-gray-400',
+      label: 'Your browser does not support geolocation.',
+    },
+    prompt: {
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+      icon: <MapPin className="h-4 w-4 text-amber-400" />,
+      text: 'text-amber-300',
+      label: 'Enable location to discover properties near you.',
+    },
+  };
 
-  if (permissionState === 'loading') {
-    return (
-      <AlertBox
-        icon={<Loader className="h-4 w-4 animate-spin" />}
-        text="Requesting location permission..."
-        bg="bg-blue-50"
-        border="border-blue-200"
-        color="text-blue-700"
-      />
-    );
-  }
-
-  if (permissionState === 'granted') {
-    return (
-      <AlertBox
-        icon={<CheckCircle className="h-4 w-4" />}
-        text={
-          <>
-            ✓ Location access granted.
-            {detectedState && ` You are in ${detectedState}.`}
-          </>
-        }
-        bg="bg-green-50"
-        border="border-green-200"
-        color="text-green-700"
-      />
-    );
-  }
-
-  if (isSystemLocationDisabled) {
-    return (
-      <div className="space-y-3">
-        <AlertBox
-          icon={<AlertCircle className="h-4 w-4" />}
-          text="Location is disabled on your device."
-          bg="bg-red-50"
-          border="border-red-200"
-          color="text-red-700"
-        />
-        <div className="flex gap-2">
-          <button
-            onClick={handleOpenLocationSettings}
-            className="flex-1 rounded-lg border border-red-300 px-4 py-2 text-red-600"
-          >
-            View Settings
-          </button>
-          <button className="flex-1 rounded-lg border px-4 py-2">Browse All</button>
-        </div>
-      </div>
-    );
-  }
-
-  if (permissionState === 'denied') {
-    return (
-      <div className="space-y-3">
-        <AlertBox
-          icon={<AlertCircle className="h-4 w-4" />}
-          text="Location permission was denied."
-          bg="bg-orange-50"
-          border="border-orange-200"
-          color="text-orange-700"
-        />
-        <div className="flex gap-2">
-          <button
-            onClick={handleRequestLocation}
-            className="flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white"
-          >
-            <MapPin className="mr-2 h-4 w-4" />
-            Try Again
-          </button>
-          <button
-            onClick={handleOpenLocationSettings}
-            className="flex-1 rounded-lg border border-orange-300 px-4 py-2 text-orange-600"
-          >
-            Enable in Settings
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (permissionState === 'unavailable') {
-    return (
-      <AlertBox
-        icon={<AlertCircle className="h-4 w-4" />}
-        text="Your browser does not support geolocation."
-        bg="bg-gray-50"
-        border="border-gray-200"
-        color="text-gray-700"
-      />
-    );
-  }
+  const current = statusVariants[permissionState] ?? statusVariants.prompt;
 
   return (
     <div className="space-y-3">
-      <AlertBox
-        icon={<MapPin className="h-4 w-4" />}
-        text="Enable location access to discover properties near you."
-        bg="bg-blue-50"
-        border="border-blue-200"
-        color="text-blue-700"
-      />
-      <div className="flex gap-2">
-        <button
-          onClick={handleRequestLocation}
-          className="flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-white"
-        >
-          <MapPin className="mr-2 h-4 w-4" />
-          Enable Location
-        </button>
-        <button className="flex-1 rounded-lg border px-4 py-2">Browse All</button>
+      <div
+        className={`flex items-start gap-3 rounded-xl border p-3.5 ${current.bg} ${current.border}`}
+      >
+        <div className="mt-0.5 shrink-0">{current.icon}</div>
+        <p className={`text-[13px] font-medium leading-snug ${current.text}`}>
+          {current.label}
+        </p>
       </div>
+
+      {(permissionState === 'prompt' || permissionState === 'denied') && (
+        <div className="flex gap-2">
+          <button
+            onClick={handleRequestLocation}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.98] px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-all duration-150 shadow-lg shadow-amber-500/20"
+          >
+            <MapPin className="h-3.5 w-3.5" />
+            {permissionState === 'denied' ? 'Try Again' : 'Enable Location'}
+          </button>
+          {permissionState === 'denied' && (
+            <button
+              onClick={handleOpenLocationSettings}
+              className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150"
+            >
+              Open Settings
+            </button>
+          )}
+          {permissionState === 'prompt' && (
+            <button className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150">
+              Browse All
+            </button>
+          )}
+        </div>
+      )}
+
+      {isSystemLocationDisabled && permissionState === 'denied' && (
+        <button
+          onClick={handleOpenLocationSettings}
+          className="w-full rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150"
+        >
+          View Device Settings
+        </button>
+      )}
     </div>
   );
 }

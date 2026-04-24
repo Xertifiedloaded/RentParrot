@@ -7,20 +7,7 @@ import {
   useEffect,
   ReactNode,
 } from 'react';
-
-interface AuthUser {
-  id: string;
-  email: string;
-  name: string;
-}
-
-interface AuthContextType {
-  user: AuthUser | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-}
+import { AuthUser, AuthContextType } from '../types/index';
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -60,12 +47,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch('/api/auth/login', { method: 'DELETE' });
+    await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
   };
 
+  const resetPassword = async (email: string) => {
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send reset email');
+    // resolves void on success — caller handles the UI state change
+  };
+
+  const confirmReset = async (token: string, password: string) => {
+    const res = await fetch('/api/auth/reset-password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Reset failed');
+  };
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        resetPassword,
+        confirmReset,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,13 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import ReviewCard from '@/components/ReviewCard';
-import { Property, NEGATIVE_CATEGORIES, CATEGORY_LABELS } from '@/types';
+import {
+  Property,
+  NEGATIVE_CATEGORIES,
+  CATEGORY_LABELS,
+  CATEGORY_TAILWIND,
+  Tab,
+} from '@/types';
 import { useAuth } from '@/components/AuthProvider';
-import toast from 'react-hot-toast';
+import {
+  HomeIcon,
+  MapPin,
+  ArrowLeft,
+  Sparkles,
+  MessageSquare,
+  ChevronRight,
+} from 'lucide-react';
 
 const GoogleMap = dynamic(() => import('@/components/GoogleMap'), {
   ssr: false,
@@ -16,14 +30,11 @@ const GoogleMap = dynamic(() => import('@/components/GoogleMap'), {
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const router = useRouter();
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'all' | 'positive' | 'negative'>(
-    'all',
-  );
+  const [activeTab, setActiveTab] = useState<Tab>('all');
 
   useEffect(() => {
     fetch(`/api/properties/${id}`)
@@ -48,33 +59,53 @@ export default function PropertyDetailPage() {
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <div className="loader-wrap">
-        <div className="loader" />
-      </div>
-    );
-  if (!property)
-    return (
-      <div className="page">
-        <div className="empty-state">
-          <span className="empty-state-icon">🏚️</span>
-          <div className="empty-state-title">Property not found</div>
-          <Link href="/properties" className="btn btn-outline">
-            Back to Properties
-          </Link>
+      <div className="flex h-screen items-center justify-center bg-[#08090c]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative h-10 w-10">
+            <div className="absolute inset-0 rounded-full border border-[#c8a96e]/20 animate-ping" />
+            <div className="h-10 w-10 rounded-full border border-[#c8a96e]/40 border-t-[#c8a96e] animate-spin" />
+          </div>
+          <p className="text-[11px] tracking-[0.3em] uppercase text-white/20">
+            Loading property
+          </p>
         </div>
       </div>
     );
+  }
+
+  if (!property) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#08090c] text-center px-6">
+        <div className="w-20 h-20 rounded-2xl bg-white/3 border border-white/6 flex items-center justify-center">
+          <HomeIcon size={28} className="text-white/15" />
+        </div>
+        <div>
+          <p className="text-base font-semibold text-white/40 mb-1">
+            Property not found
+          </p>
+          <p className="text-xs text-white/20">
+            This property may have been removed or doesn't exist.
+          </p>
+        </div>
+        <Link
+          href="/properties"
+          className="flex items-center gap-2 rounded-xl border border-white/8 bg-white/3 px-5 py-2.5 text-xs font-medium text-white/40 hover:bg-white/[0.06] hover:text-white/60 transition-all"
+        >
+          <ArrowLeft size={13} /> Back to Properties
+        </Link>
+      </div>
+    );
+  }
 
   const reviews = property.reviews || [];
   const positiveReviews = reviews.filter(
-    (r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c))
+    (r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)),
   );
-  const negativeReviews = reviews.filter(
-    (r) => r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c))
+  const negativeReviews = reviews.filter((r) =>
+    r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)),
   );
-
   const displayedReviews =
     activeTab === 'positive'
       ? positiveReviews
@@ -83,221 +114,362 @@ export default function PropertyDetailPage() {
         : reviews;
 
   const categoryCounts: Record<string, number> = {};
-  reviews.forEach((r) => {
+  reviews.forEach((r) =>
     r.categories.forEach((cat) => {
       categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-    });
-  });
-
+    }),
+  );
   const topCategories = Object.entries(categoryCounts)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 4);
+    .slice(0, 5);
+
+  const tabs: { key: Tab; label: string; count: number }[] = [
+    { key: 'all', label: 'All Reviews', count: reviews.length },
+    { key: 'positive', label: 'Positive', count: positiveReviews.length },
+    { key: 'negative', label: 'Issues', count: negativeReviews.length },
+  ];
+
+  const scorePercent =
+    reviews.length > 0
+      ? Math.round((positiveReviews.length / reviews.length) * 100)
+      : 0;
 
   return (
-    <div className="page">
-      <div style={{ marginBottom: '24px' }}>
-        <Link
-          href="/properties"
-          style={{ color: 'var(--text-secondary)', fontSize: '14px' }}
-        >
-          ← Back to Properties
-        </Link>
-      </div>
+    <div
+      className="min-h-screen bg-[#08090c] text-white"
+      style={{ fontFamily: "'DM Sans', 'Outfit', sans-serif" }}
+    >
+      <div className="relative w-full" style={{ height: '520px' }}>
+        {property.imageUrl ? (
+          <Image
+            src={property.imageUrl}
+            alt={property.name}
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[#12141a] flex items-center justify-center">
+            {/* <HomeIcon size={48} className="text-white/10" /> */}
+            <GoogleMap singleProperty={property} />
+          </div>
+        )}
 
-      <div className="property-detail-grid">
-        {/* Left column */}
-        <div>
-          <div style={{ marginBottom: '24px' }}>
-            <h1 className="page-title" style={{ marginBottom: '8px' }}>
+        <div className="absolute inset-0 bg-linear-to-t from-[#08090c] via-[#08090c]/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-[#08090c]/30 to-transparent" />
+
+        <div className="absolute top-0 left-0 right-0 px-6 pt-6">
+          <Link
+            href="/properties"
+            className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-black/30 px-4 py-2 text-xs font-medium text-white/60 backdrop-blur-md hover:bg-white/10 hover:text-white/80 transition-all"
+          >
+            <ArrowLeft size={12} /> Properties
+          </Link>
+        </div>
+
+        <div className="absolute bottom-0 left-0 right-0 px-6 pb-8">
+          <div className="mx-auto max-w-6xl">
+            {reviews.length > 0 && (
+              <div className="mb-3 inline-flex items-center gap-2">
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor:
+                      scorePercent >= 70
+                        ? '#4ade80'
+                        : scorePercent >= 40
+                          ? '#facc15'
+                          : '#f87171',
+                  }}
+                />
+                <span
+                  className="text-xs font-semibold tracking-wide"
+                  style={{
+                    color:
+                      scorePercent >= 70
+                        ? '#4ade80'
+                        : scorePercent >= 40
+                          ? '#facc15'
+                          : '#f87171',
+                  }}
+                >
+                  {scorePercent}% positive
+                </span>
+              </div>
+            )}
+
+            <h1
+              className="text-3xl font-bold leading-tight text-white mb-2"
+              style={{ letterSpacing: '-0.02em' }}
+            >
               {property.name}
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-              📍 {property.address}
+
+            <p className="flex items-center gap-1.5 text-sm text-white/50">
+              <MapPin size={13} className="text-[#c8a96e]" />
+              <span className="capitalize">{property.address}</span>
             </p>
+
             {property.description && (
-              <p style={{ marginTop: '12px', color: 'var(--text-secondary)' }}>
+              <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/35">
                 {property.description}
               </p>
             )}
           </div>
+        </div>
+      </div>
 
-          {/* Stats */}
-          <div className="stats-bar">
-            <div className="stat-chip stat-chip-neutral">
-              💬 {reviews.length} total review{reviews.length !== 1 ? 's' : ''}
-            </div>
-            <div className="stat-chip stat-chip-positive">
-              ✅ {positiveReviews.length} positive
-            </div>
-            <div className="stat-chip stat-chip-negative">
-              ⚠️ {negativeReviews.length} negative
-            </div>
-          </div>
-
-          {/* Top issues */}
-          {topCategories.length > 0 && (
-            <div className="card" style={{ marginBottom: '24px' }}>
+      <div className="border-b border-white/5 bg-[#0c0e13]">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex items-stretch divide-x divide-white/5">
+            {[
+              {
+                label: 'Total Reviews',
+                value: reviews.length,
+                icon: '💬',
+                color: 'text-white/70',
+              },
+              {
+                label: 'Positive',
+                value: positiveReviews.length,
+                icon: '✅',
+                color: 'text-emerald-400',
+              },
+              {
+                label: 'Issues',
+                value: negativeReviews.length,
+                icon: '⚠️',
+                color: 'text-red-400',
+              },
+              {
+                label: 'Satisfaction',
+                value: `${scorePercent}%`,
+                icon: '📊',
+                color:
+                  reviews.length === 0
+                    ? 'text-white/30'
+                    : scorePercent >= 70
+                      ? 'text-emerald-400'
+                      : 'text-amber-400',
+              },
+            ].map(({ label, value, icon, color }) => (
               <div
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontWeight: 700,
-                  marginBottom: '12px',
-                  fontSize: '14px',
-                }}
+                key={label}
+                className="flex flex-col items-center justify-center gap-0.5 px-8 py-4 first:pl-0 last:pr-0 flex-1"
               >
-                Most Reported Issues
+                <span className="text-xs text-white/25 tracking-wide">
+                  {icon} {label}
+                </span>
+                <span className={`text-xl font-bold ${color}`}>{value}</span>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {topCategories.map(([cat, count]) => (
-                  <span
-                    key={cat}
-                    className="filter-chip active"
-                    style={{ fontSize: '12px' }}
-                  >
-                    {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]} ×{' '}
-                    {count}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* AI Summary */}
-          {summary ? (
-            <div className="ai-summary">
-              <div className="ai-summary-label">🤖 AI Summary</div>
-              <p className="ai-summary-text">{summary}</p>
-            </div>
-          ) : (
-            <button
-              className="btn btn-outline"
-              style={{ marginBottom: '24px' }}
-              onClick={loadSummary}
-              disabled={summaryLoading || reviews.length === 0}
-            >
-              {summaryLoading
-                ? 'Generating summary…'
-                : '✨ Generate AI Summary'}
-            </button>
-          )}
-
-          {/* Reviews */}
-          <div className="tabs">
-            {(['all', 'positive', 'negative'] as const).map((tab) => (
-              <button
-                key={tab}
-                className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === 'all'
-                  ? `All (${reviews.length})`
-                  : tab === 'positive'
-                    ? `✅ Good (${positiveReviews.length})`
-                    : `⚠️ Issues (${negativeReviews.length})`}
-              </button>
             ))}
           </div>
+        </div>
+      </div>
 
-          {displayedReviews.length === 0 ? (
-            <div className="empty-state" style={{ padding: '40px 0' }}>
-              <span className="empty-state-icon">💬</span>
-              <div className="empty-state-desc">
-                No reviews in this category yet
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
+          <div className="space-y-6 min-w-0">
+            {topCategories.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/25">
+                  Most Reported
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {topCategories.map(([cat, count]) => (
+                    <span
+                      key={cat}
+                      className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-medium ring-1 ${
+                        CATEGORY_TAILWIND[cat] ??
+                        'bg-white/4 text-white/40 ring-white/10'
+                      }`}
+                    >
+                      {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}
+                      <span className="rounded-lg bg-black/20 px-1.5 py-px text-[10px] font-bold">
+                        {count}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {summary ? (
+              <div className="rounded-2xl border border-[#c8a96e]/20 bg-[#c8a96e]/4 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-[#c8a96e]" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#c8a96e]/70">
+                    AI Summary
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed text-white/60">
+                  {summary}
+                </p>
               </div>
-            </div>
-          ) : (
-            <div
-              style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
-            >
-              {displayedReviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
-              ))}
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={loadSummary}
+                disabled={summaryLoading || reviews.length === 0}
+                className="group flex w-full items-center justify-between rounded-2xl border border-white/[0.07] bg-white/2.5 px-5 py-4 text-sm font-medium text-white/40 transition-all hover:border-[#c8a96e]/30 hover:bg-[#c8a96e]/[0.04] hover:text-[#c8a96e] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <span className="flex items-center gap-2">
+                  {summaryLoading ? (
+                    <span className="h-4 w-4 rounded-full border border-white/20 border-t-[#c8a96e] animate-spin" />
+                  ) : (
+                    <Sparkles
+                      size={15}
+                      className="group-hover:text-[#c8a96e] transition-colors"
+                    />
+                  )}
+                  {summaryLoading
+                    ? 'Generating AI summary…'
+                    : 'Generate AI Summary'}
+                </span>
+                {!summaryLoading && (
+                  <ChevronRight
+                    size={15}
+                    className="opacity-40 group-hover:opacity-70 transition-opacity"
+                  />
+                )}
+              </button>
+            )}
 
-          {user && (
-            <div style={{ marginTop: '24px' }}>
+            <section>
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-white/80 flex items-center gap-2">
+                  <MessageSquare size={15} className="text-white/30" /> Reviews
+                </h2>
+                <div className="flex items-center rounded-xl bg-white/4 p-1 ring-1 ring-white/6 gap-0.5">
+                  {tabs.map(({ key, label, count }) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveTab(key)}
+                      className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
+                        activeTab === key
+                          ? 'bg-white/8 text-white shadow-sm'
+                          : 'text-white/30 hover:text-white/55'
+                      }`}
+                    >
+                      {label}
+                      <span
+                        className={`text-[10px] font-bold rounded-md px-1.5 py-px ${
+                          activeTab === key
+                            ? 'bg-white/10 text-white/70'
+                            : 'bg-white/5 text-white/25'
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {displayedReviews.length === 0 ? (
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-white/2 py-16 text-center">
+                  <span className="text-4xl opacity-15">💬</span>
+                  <p className="text-xs text-white/20">
+                    No reviews in this category yet
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-2.5">
+                  {displayedReviews.map((r) => (
+                    <li key={r.id}>
+                      <ReviewCard review={r} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            {user && (
               <Link
                 href={`/post-review?propertyId=${property.id}`}
-                className="btn btn-primary"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#c8a96e] px-6 py-3 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#d4b87e] active:scale-[0.98]"
               >
                 + Leave a Review
               </Link>
-            </div>
-          )}
-        </div>
-
-        {/* Right column */}
-        <div className="sticky-card">
-          <div
-            className="card"
-            style={{
-              marginBottom: '16px',
-              height: '300px',
-              padding: 0,
-              overflow: 'hidden',
-            }}
-          >
-            <GoogleMap singleProperty={property} />
+            )}
           </div>
 
-          <div className="card">
+          <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
             <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                marginBottom: '16px',
-              }}
+              className="overflow-hidden rounded-2xl ring-1 ring-white/[0.07]"
+              style={{ height: '220px' }}
             >
-              Property Details
+              <GoogleMap singleProperty={property} />
             </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                fontSize: '14px',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Listed by</span>
-                <span>{property.user?.name || 'Unknown'}</span>
+
+            <div className="rounded-2xl border border-white/[0.07] bg-white/2.5 p-5 space-y-4">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/20">
+                Property Details
+              </h3>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    label: 'Listed by',
+                    value: property.user?.name || 'Unknown',
+                  },
+                  {
+                    label: 'Coordinates',
+                    value: `${property.latitude.toFixed(4)}, ${property.longitude.toFixed(4)}`,
+                  },
+                  { label: 'Total Reviews', value: String(reviews.length) },
+                ].map(({ label, value }) => (
+                  <div
+                    key={label}
+                    className="flex items-start justify-between gap-4"
+                  >
+                    <span className="text-[11px] text-white/25 leading-snug">
+                      {label}
+                    </span>
+                    <span className="text-[11px] font-semibold text-white/60 text-right leading-snug">
+                      {value}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Coordinates</span>
-                <span
-                  style={{ fontSize: '12px', color: 'var(--text-secondary)' }}
-                >
-                  {property.latitude.toFixed(4)},{' '}
-                  {property.longitude.toFixed(4)}
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'var(--text-muted)' }}>
-                  Total Reviews
-                </span>
-                <span>{reviews.length}</span>
-              </div>
+
+              {reviews.length > 0 && (
+                <div className="pt-2 border-t border-white/6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[11px] text-white/25">
+                      Satisfaction
+                    </span>
+                    <span className="text-[11px] font-bold text-white/60">
+                      {scorePercent}%
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-white/6 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all"
+                      style={{
+                        width: `${scorePercent}%`,
+                        backgroundColor:
+                          scorePercent >= 70
+                            ? '#4ade80'
+                            : scorePercent >= 40
+                              ? '#facc15'
+                              : '#f87171',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {!user && (
-              <div
-                style={{
-                  marginTop: '16px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid var(--border)',
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: '13px',
-                    color: 'var(--text-muted)',
-                    marginBottom: '10px',
-                  }}
-                >
-                  Sign in to leave a review
+              <div className="rounded-2xl border border-white/[0.07] bg-white/2.5 p-5 space-y-3">
+                <p className="text-xs text-white/35 leading-relaxed">
+                  Sign in to share your experience at this property.
                 </p>
-                <Link href="/login" className="btn btn-primary btn-full btn-sm">
+                <Link
+                  href="/login"
+                  className="flex w-full items-center justify-center rounded-xl bg-[#c8a96e] py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-[#d4b87e]"
+                >
                   Sign In
                 </Link>
               </div>

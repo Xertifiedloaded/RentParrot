@@ -22,12 +22,13 @@ export async function GET(
       .map((r) => `[${r.categories.join(', ')}]: ${r.comment}`)
       .join('\n');
 
-    const prompt = `You are a helpful assistant analyzing tenant reviews for a property in Lagos, Nigeria. Based on the following reviews, generate a concise 2-3 sentence summary highlighting the most important issues and positives. Be direct and helpful for someone considering renting this property.
+    const prompt = `You are a helpful assistant analyzing tenant reviews for a property in Lagos, Nigeria. Based on the following reviews, generate a concise 2-3 sentence summary that:
+1. Highlights the main advantages and disadvantages.
+2. Gives a clear recommendation: should someone rent this property or avoid it?
+Be direct and helpful. Respond with just the summary paragraph, no preamble.
 
 Reviews:
-${reviewText}
-
-Respond with just the summary paragraph, no preamble.`;
+${reviewText}`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -44,20 +45,34 @@ Respond with just the summary paragraph, no preamble.`;
     });
 
     if (!response.ok) {
-      // Fallback to simple summary
+      // Fallback: generate simple summary manually
       const categoryCounts: Record<string, number> = {};
       reviews.forEach((r) => {
         r.categories.forEach((cat) => {
           categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
         });
       });
-      const topIssues = Object.entries(categoryCounts)
+
+      const topPositive = Object.entries(categoryCounts)
+        .filter(([cat]) => !cat.toLowerCase().includes('issue') && !cat.toLowerCase().includes('problem'))
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map(([cat]) => cat.toLowerCase().replace(/_/g, ' '))
         .join(', ');
+
+      const topNegative = Object.entries(categoryCounts)
+        .filter(([cat]) => cat.toLowerCase().includes('issue') || cat.toLowerCase().includes('problem'))
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([cat]) => cat.toLowerCase().replace(/_/g, ' '))
+        .join(', ');
+
+      let recommendation = 'It is recommended to avoid this property.';
+      if (topPositive && !topNegative) recommendation = 'This property seems good to rent.';
+      else if (topPositive && topNegative) recommendation = 'Consider the positives and negatives before deciding.';
+
       return NextResponse.json({
-        summary: `This property has ${reviews.length} review(s). Common themes include: ${topIssues}.`,
+        summary: `This property has ${reviews.length} review(s). Advantages: ${topPositive || 'None'}. Disadvantages: ${topNegative || 'None'}. ${recommendation}`,
       });
     }
 
@@ -67,8 +82,11 @@ Respond with just the summary paragraph, no preamble.`;
     return NextResponse.json({ summary });
   } catch (error) {
     console.error('AI summary error:', error);
+
+    // Safe fallback
     return NextResponse.json({
-      summary: 'Summary could not be generated at this time.',
+      summary:
+        'Summary could not be generated at this time. Please check the reviews manually.',
     });
   }
 }

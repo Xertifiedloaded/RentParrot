@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const currentUrl = `${protocol}://${host}`;
 
   return {
-    title: 'RentParrot – Nigerian Tenant Insight Platform',
+    title: 'RentParrot🦜 – Nigerian Tenant Insight Platform',
     description:
       'Make informed rental decisions in Nigeria with real tenant reviews.',
     icons: {
@@ -23,11 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
       apple: '/icon.png',
     },
     openGraph: {
-      title: 'RentParrot – Nigerian Tenant Insight Platform',
+      title: 'RentParrot🦜 – Nigerian Tenant Insight Platform',
       description:
         'Make informed rental decisions in Nigeria with real tenant reviews.',
       url: currentUrl,
-      siteName: 'RentParrot',
+      siteName: 'RentParrot🦜',
       images: [
         {
           url: `${currentUrl}/icon.png`,
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'RentParrot – Nigerian Tenant Insight Platform',
+      title: 'RentParrot🦜 – Nigerian Tenant Insight Platform',
       description:
         'Make informed rental decisions in Nigeria with real tenant reviews.',
       images: [`${currentUrl}/icon.png`],

@@ -1,5 +1,5 @@
 {
-  "name": "know-before-you-rent",
+  "name": "RentParrot",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-        "postinstall": "prisma generate",
+    "postinstall": "prisma generate",
     "prettier": "prettier --write .",
     "check-prettier": "prettier --check .",
     "db:generate": "prisma generate",

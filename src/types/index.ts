@@ -93,7 +93,7 @@ export interface Review {
 }
 
 export interface AuthUser {
-  userId: string;
+  id: string;
   email: string;
   name: string;
 }
@@ -161,7 +161,7 @@ export interface AuthContextType {
 export interface Props {
   target: number;
   suffix?: string;
-  duration?: number; // ms
+  duration?: number; 
   className?: string;
 }
 

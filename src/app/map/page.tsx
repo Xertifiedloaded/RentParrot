@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Search, Flame, X, ChevronUp, HomeIcon } from 'lucide-react';
+
 import { Property } from '@/types';
 import { LocationState, LISTING_TYPE_COLORS } from '../../types/index';
 
@@ -10,22 +12,158 @@ const GoogleMap = dynamic(() => import('@/components/GoogleMap'), {
   ssr: false,
 });
 
+type SidebarContentProps = {
+  search: string;
+  setSearch: (value: string) => void;
+  loading: boolean;
+  displayProperties: Property[];
+  selected: Property | null;
+  handlePropertyClick: (property: Property) => void;
+  buildLocationLine: (p: Property) => string;
+};
+
+function SidebarContent({
+  search,
+  setSearch,
+  loading,
+  displayProperties,
+  selected,
+  handlePropertyClick,
+  buildLocationLine,
+}: SidebarContentProps) {
+  return (
+    <div className="flex flex-col h-full min-h-0">
+
+      <div className="px-5 py-2 md:py-3 text-sm border-b border-white/5 shrink-0">
+        <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-3 group">
+          <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-linear-to-br from-orange-500 to-red-500 shadow-md transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+            <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+            <span className="absolute -top-1 -right-1 text-[8px] sm:text-[10px]">
+              🦜
+            </span>
+          </div>
+
+          <div className="flex flex-col leading-tight">
+            <span className="text-sm sm:text-lg lg:text-xl font-extrabold tracking-tight text-white">
+              Rent<span className="text-orange-500">Parrot</span>
+            </span>
+            <span className="text-[9px] sm:text-[10px] lg:text-xs text-gray-400 font-medium">
+              Hear before you rent
+            </span>
+          </div>
+        </Link>
+        <h1 className="text-sm mt-4 font-semibold tracking-tight text-white">
+          Explore Properties
+        </h1>
+        <p className="text-xs text-white/40 mt-1">
+          Trusted rentals across Nigeria
+        </p>
+      </div>
+
+      <div className="p-4 border-b border-white/5 shrink-0">
+        <div className="relative">
+          <Search
+            size={16}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
+          />
+          <input
+            type="text"
+            placeholder="Search location or property"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full placeholder:text-xs rounded-2xl bg-white/4 px-11 py-3 text-base text-white placeholder:text-white/25 outline-none focus:ring-1 focus:ring-amber-500/40"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </div>
+
+
+      <div className="flex-1 text-sm min-h-0 overflow-y-auto px-3 pb-4">
+        {loading ? (
+          <div className="flex justify-center py-10 text-white/40">
+            Loading...
+          </div>
+        ) : displayProperties.length === 0 ? (
+          <div className="flex text-xs items-center justify-center py-10 text-white/40">
+            No properties found
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {displayProperties.map((p: any) => {
+              const isSelected = selected?.id === p.id;
+              const typeColor =
+                LISTING_TYPE_COLORS[p.listingType] ??
+                'bg-white/5 text-white/40';
+
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => handlePropertyClick(p)}
+                  className={`w-full rounded-2xl p-4 text-left transition ${isSelected ? 'bg-white/6' : 'hover:bg-white/3'
+                    }`}
+                >
+                  <div className="flex  justify-between items-start gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-white">
+                        {p.name}
+                      </p>
+                      <p className="truncate text-xs text-white capitalize">
+                        {p.address}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2 text-[10px]">
+                    {buildLocationLine(p) && (
+                      <span className="text-white/30 truncate">
+                        {buildLocationLine(p)}
+                      </span>
+                    )}
+
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      {selected && (
+        <div className="shrink-0 sticky bottom-0 p-4 border-t border-white/5 bg-[#111214]">
+          <Link
+            href={`/properties/${selected.id}`}
+            className="w-full flex items-center justify-center rounded-2xl bg-amber-500 hover:bg-amber-400 py-3 text-sm font-semibold text-black"
+          >
+            View Details
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MapPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
-  const [nearbyProperties, setNearbyProperties] = useState<Property[] | null>(
-    null,
-  );
+  const [nearbyProperties, setNearbyProperties] = useState<Property[] | null>(null);
   const [selected, setSelected] = useState<Property | null>(null);
   const [focusedProperty, setFocusedProperty] = useState<Property | null>(null);
   const [search, setSearch] = useState('');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [loading, setLoading] = useState(true);
   const [locationState, setLocationState] = useState<LocationState>('prompt');
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   useEffect(() => {
     fetch('/api/properties')
@@ -40,6 +178,7 @@ export default function MapPage() {
 
   useEffect(() => {
     if (!search) return setFilteredProperties(properties);
+
     const q = search.toLowerCase();
     setFilteredProperties(
       properties.filter(
@@ -61,6 +200,7 @@ export default function MapPage() {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserLocation(loc);
         setLocationState('granted');
+
         const res = await fetch(
           `/api/properties?lat=${loc.lat}&lng=${loc.lng}&radius=5`,
         );
@@ -75,8 +215,10 @@ export default function MapPage() {
     const url = state
       ? `/api/properties?state=${encodeURIComponent(state)}`
       : `/api/properties?lat=${lat}&lng=${lng}&radius=5`;
+
     const res = await fetch(url);
     const data = await res.json();
+
     setNearbyProperties(data.properties || []);
     setSelected(null);
     setFocusedProperty(null);
@@ -87,304 +229,101 @@ export default function MapPage() {
     setFocusedProperty(property);
   };
 
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartY === null) return;
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = touchEndY - touchStartY;
+
+    if (diff > 50) setMobileOpen(false);
+    if (diff < -50) setMobileOpen(true);
+
+    setTouchStartY(null);
+  };
+
   const displayProperties = nearbyProperties ?? filteredProperties;
 
   const buildLocationLine = (p: any) =>
     [p.town, p.community, p.state].filter(Boolean).join(' · ');
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#111111] font-['DM_Sans',_'Outfit',_sans-serif]">
-      <aside className="relative z-20 flex w-[340px] shrink-0 flex-col border-r border-white/[0.05] bg-[#161616]">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.05]">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/15 ring-1 ring-amber-500/30">
-              <svg
-                className="h-4 w-4 text-amber-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/60">
-                PropertyMap
-              </p>
-              <p className="text-[10px] text-white/25">Nigeria</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 rounded-lg bg-white/[0.04] px-3 py-1.5 ring-1 ring-white/[0.06]">
-            <span className="text-sm font-bold tabular-nums text-amber-400">
-              {displayProperties.length}
-            </span>
-            <span className="text-[9px] font-semibold uppercase tracking-widest text-white/25">
-              listings
-            </span>
-          </div>
-        </div>
-
-        <div className="px-4 py-3 border-b border-white/[0.05] space-y-2.5">
-          <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest ring-1 transition-all ${
-                nearbyProperties
-                  ? 'bg-amber-500/10 text-amber-300 ring-amber-500/25'
-                  : 'bg-white/[0.04] text-white/35 ring-white/[0.07]'
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${nearbyProperties ? 'bg-amber-400 animate-pulse' : 'bg-white/20'}`}
-              />
-              {nearbyProperties ? 'Nearby' : 'All Nigeria'}
-            </span>
-
-            {nearbyProperties && (
-              <button
-                onClick={() => {
-                  setNearbyProperties(null);
-                  setFocusedProperty(null);
-                }}
-                className="ml-auto text-[10px] text-white/30 hover:text-white/60 underline underline-offset-2 transition-colors"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-
-          {nearbyProperties === null && (
-            <div className="relative">
-              <svg
-                className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/20"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Area, bus stop, property…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg bg-white/[0.04] py-2 pl-9 pr-8 text-xs text-white/70 placeholder-white/20 ring-1 ring-white/[0.07] outline-none transition focus:bg-white/[0.07] focus:ring-amber-500/40"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors text-sm"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex-1 overflow-y-auto">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center gap-3 py-24">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-amber-500" />
-              <p className="text-[10px] uppercase tracking-widest text-white/20">
-                Loading…
-              </p>
-            </div>
-          ) : displayProperties.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-24 px-6 text-center">
-              <div className="text-3xl opacity-20 mb-1">🗺️</div>
-              <p className="text-sm font-semibold text-white/30">
-                No properties found
-              </p>
-              <p className="text-xs text-white/20">
-                Try a different area or click the map
-              </p>
-            </div>
-          ) : (
-            <ul className="divide-y divide-white/[0.03] px-3 py-2">
-              {displayProperties.map((p) => {
-                const isSelected = selected?.id === p.id;
-                const typeColor =
-                  LISTING_TYPE_COLORS[(p as any).listingType] ??
-                  'bg-white/5 text-white/30 ring-1 ring-white/10';
-
-                return (
-                  <li key={p.id}>
-                    <button
-                      onClick={() => handlePropertyClick(p)}
-                      className={`group w-full rounded-xl px-3 py-3 text-left transition-all duration-150 ${
-                        isSelected
-                          ? 'bg-amber-500/10 ring-1 ring-amber-500/25'
-                          : 'hover:bg-white/[0.03]'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div
-                          className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-base transition-colors ${
-                            isSelected
-                              ? 'bg-amber-500/20'
-                              : 'bg-white/[0.05] group-hover:bg-white/[0.08]'
-                          }`}
-                        >
-                          🏠
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p
-                              className={`truncate text-[13px] font-semibold leading-snug transition-colors ${
-                                isSelected
-                                  ? 'text-amber-300'
-                                  : 'text-white/75 group-hover:text-white/90'
-                              }`}
-                            >
-                              {p.name}
-                            </p>
-                            {(p as any).price && (
-                              <span className="shrink-0 text-[11px] font-bold text-amber-400 bg-amber-500/10 rounded px-1.5 py-0.5 ring-1 ring-amber-500/20">
-                                {(p as any).price}
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="mt-0.5 truncate text-[11px] text-white/30">
-                            {p.address}
-                          </p>
-
-                          <div className="mt-1.5 flex items-center gap-2">
-                            {buildLocationLine(p) && (
-                              <span className="truncate text-[10px] text-white/25 uppercase tracking-wide">
-                                {buildLocationLine(p)}
-                              </span>
-                            )}
-                            <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                              {(p as any).listingType && (
-                                <span
-                                  className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${typeColor}`}
-                                >
-                                  {(p as any).listingType}
-                                </span>
-                              )}
-                              {(p as any).distance && (
-                                <span className="text-[10px] font-semibold text-emerald-400">
-                                  {(p as any).distance}km
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {isSelected && (
-                            <p className="mt-1.5 text-[10px] text-amber-400/70 font-medium flex items-center gap-1">
-                              <span>📍</span> Zoomed to location on map
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-
-        {selected && (
-          <div className="border-t border-white/[0.05] p-4 bg-[#161616]">
-            <div className="mb-3 flex items-start gap-2.5">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-base">
-                🏠
-              </div>
-              <div className="min-w-0">
-                <p className="truncate text-[13px] font-semibold text-white/80">
-                  {selected.name}
-                </p>
-                <p className="truncate text-[11px] text-white/35">
-                  {(selected as any).address}
-                </p>
-              </div>
-            </div>
-            <Link
-              href={`/properties/${selected.id}`}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-[0.98] px-4 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-all duration-150 shadow-lg shadow-amber-500/20"
-            >
-              View Full Details
-              <svg
-                className="h-3.5 w-3.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                viewBox="0 0 24 24"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-        )}
+    <div className="h-dvh w-screen bg-[#0B0B0C] text-white overflow-hidden flex">
+      <aside className="hidden md:flex w-85 xl:w-95 flex-col border-r border-white/5 bg-[#111214] h-dvh overflow-hidden">
+        <SidebarContent
+          search={search}
+          setSearch={setSearch}
+          loading={loading}
+          displayProperties={displayProperties}
+          selected={selected}
+          handlePropertyClick={handlePropertyClick}
+          buildLocationLine={buildLocationLine}
+        />
       </aside>
 
-      <main className="relative flex-1 overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pt-4 gap-3">
-          <div className="pointer-events-auto flex items-center gap-2 rounded-xl bg-[#161616]/90 px-3.5 py-2 text-xs ring-1 ring-white/[0.07] backdrop-blur-xl shadow-xl">
-            <span
-              className={`h-2 w-2 rounded-full ${
-                locationState === 'granted'
-                  ? 'bg-blue-400 animate-pulse'
-                  : locationState === 'requesting'
-                    ? 'bg-amber-400 animate-pulse'
-                    : 'bg-white/20'
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className={`fixed md:hidden inset-x-0 bottom-0 z-30 rounded-t-3xl bg-[#111214] border-t border-white/5 overflow-hidden transition-transform duration-300 ${mobileOpen
+          ? 'translate-y-0 h-[75vh]'
+          : 'translate-y-[calc(100%-80px)] h-[75vh]'
+          }`}
+      >
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="w-full flex justify-center"
+        >
+          <ChevronUp
+            className={`text-white/40 transition-transform ${mobileOpen ? 'rotate-180' : ''
               }`}
-            />
-            <span className="font-medium text-white/55">
-              {locationState === 'granted'
-                ? 'Your location active'
-                : locationState === 'requesting'
-                  ? 'Locating…'
-                  : 'Lagos, Nigeria'}
-            </span>
+            size={20}
+          />
+        </button>
+
+        <SidebarContent
+          search={search}
+          setSearch={setSearch}
+          loading={loading}
+          displayProperties={displayProperties}
+          selected={selected}
+          handlePropertyClick={handlePropertyClick}
+          buildLocationLine={buildLocationLine}
+        />
+      </div>
+
+      {/* Map */}
+      <main className="relative flex-1 overflow-hidden">
+        <div className="absolute z-20 top-4 left-4 right-4 flex justify-between">
+          <div className="backdrop-blur-xl bg-black/40 border border-white/10 rounded-2xl px-4 py-2 text-xs">
+            {locationState === 'granted'
+              ? 'Live Location'
+              : locationState === 'requesting'
+                ? 'Locating...'
+                : 'Nigeria'}
           </div>
 
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`pointer-events-auto flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold ring-1 backdrop-blur-xl shadow-xl transition-all duration-150 ${
-              showHeatmap
-                ? 'bg-orange-500/20 text-orange-300 ring-orange-500/30 shadow-orange-500/10'
-                : 'bg-[#161616]/90 text-white/45 ring-white/[0.07] hover:text-white/70'
-            }`}
+            className={`backdrop-blur-xl rounded-2xl px-4 py-2 text-xs border ${showHeatmap
+              ? 'bg-amber-500/20 border-amber-500/30 text-amber-300'
+              : 'bg-black/40 border-white/10 text-white/70'
+              }`}
           >
-            <span>🔥</span>
-            <span>{showHeatmap ? 'Heatmap On' : 'Heatmap'}</span>
+            <Flame size={14} />
           </button>
         </div>
 
-        <div className="absolute inset-0">
-          <GoogleMap
-            properties={displayProperties}
-            onMarkerClick={handlePropertyClick}
-            onMapClick={handleMapClick}
-            showHeatmap={showHeatmap}
-            userLocation={userLocation || undefined}
-            focusedProperty={focusedProperty}
-          />
-        </div>
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center z-10">
-          <div className="flex items-center gap-3 rounded-full bg-[#161616]/95 px-5 py-2.5 text-[11px] ring-1 ring-white/[0.07] backdrop-blur-xl shadow-2xl">
-            <span className="font-bold tabular-nums text-amber-400">
-              {displayProperties.length}
-            </span>
-            <span className="text-white/35">
-              {nearbyProperties !== null
-                ? 'properties nearby'
-                : 'properties across Nigeria'}
-            </span>
-            <span className="h-3 w-px bg-white/[0.10]" />
-            <span className="text-white/20">Click a listing to zoom</span>
-          </div>
-        </div>
+        <GoogleMap
+          properties={displayProperties}
+          onMarkerClick={handlePropertyClick}
+          onMapClick={handleMapClick}
+          showHeatmap={showHeatmap}
+          userLocation={userLocation || undefined}
+          focusedProperty={focusedProperty}
+        />
       </main>
     </div>
   );

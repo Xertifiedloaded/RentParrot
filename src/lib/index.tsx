@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Testimonial, Step, Feature } from '../types/index';
 
+
+
 export const smtpConfig = {
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
@@ -198,3 +200,9 @@ export const LAGOS_HINTS = [
   { emoji: '🌇', label: 'Surulere', coords: '6.4983, 3.3563' },
   { emoji: '🏘️', label: 'Ikeja', coords: '6.5954, 3.3353' },
 ];
+
+
+
+
+
+

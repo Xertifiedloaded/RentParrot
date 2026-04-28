@@ -5,40 +5,43 @@ import Link from 'next/link';
 import PropertyCard from '@/components/PropertyCard';
 import { Property } from '@/types';
 import { useUserLocation } from '@/hooks/useUserLocation';
-import { MapPinCheck } from 'lucide-react';
+import { MapPin, Search, X, Plus } from 'lucide-react';
+
+const FONT_MONO = "'Instrument Mono', 'JetBrains Mono', monospace";
 
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
+  const [focused, setFocused] = useState(false);
 
   const { status, detectedState, clearLocation } = useUserLocation();
 
-  const fetchProperties = useCallback(
-    async (stateFilter?: string) => {
-      setLoading(true);
-      try {
-        let url = '/api/properties';
-        if (query) {
-          url += `?search=${encodeURIComponent(query)}`;
-        } else if (stateFilter) {
-          url += `?state=${encodeURIComponent(stateFilter)}`;
-        }
-        const res = await fetch(url);
-        const data = await res.json();
-        setProperties(data.properties || []);
-      } catch {
-        setProperties([]);
-      } finally {
-        setLoading(false);
+  const fetchProperties = useCallback(async (stateFilter?: string) => {
+    setLoading(true);
+    try {
+      let url = '/api/properties';
+
+      if (query) {
+        url += `?search=${encodeURIComponent(query)}`;
+      } else if (stateFilter) {
+        url += `?state=${encodeURIComponent(stateFilter)}`;
       }
-    },
-    [query],
-  );
+
+      const res = await fetch(url);
+      const data = await res.json();
+      setProperties(data.properties || []);
+    } catch {
+      setProperties([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [query]);
 
   useEffect(() => {
     if (status === 'idle') return;
+
     if (query) {
       fetchProperties();
     } else {
@@ -56,142 +59,180 @@ export default function PropertiesPage() {
     setQuery('');
   };
 
+  const isLoading = loading || status === 'idle';
+  const isEmpty = !isLoading && properties.length === 0;
+
   return (
-    <div className="min-h-screen ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+    <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden">
+      {/* Background Glow */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.08),transparent_35%)]" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6 sm:mb-8">
+          <div className="min-w-0">
+            <p
+              className="text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-amber-400/60 font-semibold"
+              style={{ fontFamily: FONT_MONO }}
+            >
+              {detectedState && !query ? `${detectedState} State` : 'All Nigeria'}
+            </p>
+
+            <h1 className="mt-1 text-xl sm:text-3xl font-black tracking-tight wrap-break-word">
               Properties
+              {!isLoading && !isEmpty && (
+                <span
+                  className="ml-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-0.5 text-[10px] sm:text-xs text-amber-400 align-middle"
+                  style={{ fontFamily: FONT_MONO }}
+                >
+                  {properties.length}
+                </span>
+              )}
             </h1>
-            <p className="mt-1 text-sm text-gray-400">
+
+            <p className="mt-1 text-[11px] sm:text-sm text-white/40">
               {query
-                ? 'Search results across Nigeria'
+                ? `Results for "${query}"`
                 : detectedState
-                  ? `Showing properties in ${detectedState} State`
-                  : status === 'idle'
-                    ? 'Detecting your location…'
-                    : `Browse ${properties.length} properties across Nigeria`}
+                ? `Near your location in ${detectedState}`
+                : status === 'idle'
+                ? 'Detecting location…'
+                : 'Browse trusted properties across Nigeria'}
             </p>
           </div>
+
           <Link
             href="/post-property"
-            className="inline-flex items-center gap-2 bg-amber-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150 shadow-lg shadow-orange-500/20"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-xs sm:text-sm font-bold text-black shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition"
           >
-            <span className="text-base leading-none">+</span>
+            <Plus size={14} />
             Add Property
           </Link>
         </div>
 
-        {detectedState && !query && (
-          <div className="flex items-center gap-3 mb-6 flex-wrap">
-            <span className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-1.5 text-xs font-semibold text-orange-400">
-              <span>
-                <MapPinCheck size={12} />
-              </span>
-              {detectedState} State
-              <button
-                onClick={clearLocation}
-                className="ml-0.5 text-orange-400 hover:text-orange-300 transition-colors text-sm leading-none"
-                aria-label="Remove state filter"
-              >
-                ×
-              </button>
-            </span>
-            <button
-              onClick={clearLocation}
-              className="text-xs font-medium text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 rounded-full px-4 py-1.5 transition-colors duration-150"
-            >
-              Show All States
-            </button>
-          </div>
-        )}
+        {/* Search */}
+        <form onSubmit={handleSearch} className="mb-5">
+          <div
+            className={`flex items-center gap-2 rounded-2xl border bg-white/5 px-3 sm:px-4 transition-all ${
+              focused
+                ? 'border-amber-400/40 ring-2 ring-amber-400/20'
+                : 'border-white/10'
+            }`}
+          >
+            <Search size={14} className="text-white/30 shrink-0" />
 
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="flex items-center gap-3 mb-6">
-          <div className="flex-1 relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none select-none">
-              🔍
-            </span>
             <input
               type="text"
-              placeholder="Search by name, address or state…"
+              placeholder="Search property, address or state..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#242424] border border-gray-700  rounded-lg pl-10 pr-4 py-2.5 text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-150"
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              className="flex-1 bg-transparent py-3 text-xs sm:text-sm text-white placeholder:text-white/25 outline-none"
             />
-          </div>
-          <button
-            type="submit"
-            className="bg-amber-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors duration-150 whitespace-nowrap shadow-md shadow-amber-500/20"
-          >
-            Search
-          </button>
-          {query && (
+
+            {search && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="rounded-lg p-1 text-white/30 hover:text-white"
+              >
+                <X size={14} />
+              </button>
+            )}
+
             <button
-              type="button"
-              onClick={clearSearch}
-              className="text-sm font-medium text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 rounded-lg px-4 py-2.5 transition-colors duration-150 whitespace-nowrap"
+              type="submit"
+              className="rounded-xl bg-amber-500 px-3 sm:px-4 py-2 text-[10px] sm:text-xs font-bold text-black hover:bg-amber-400 transition"
             >
-              Clear
+              Search
             </button>
-          )}
+          </div>
         </form>
 
-        {/* Active Query Banner */}
-        {query && (
-          <p className="mb-5 text-sm text-gray-400">
-            Results for{' '}
-            <strong className="text-gray-200 font-semibold">"{query}"</strong>
-            {' · '}
+        {/* Filters */}
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          {detectedState && !query && (
+            <>
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-[10px] sm:text-xs text-amber-400"
+                style={{ fontFamily: FONT_MONO }}
+              >
+                <MapPin size={10} />
+                {detectedState}
+                <button onClick={clearLocation}>
+                  <X size={10} />
+                </button>
+              </span>
+
+              <button
+                onClick={clearLocation}
+                className="rounded-full border border-white/10 px-3 py-1 text-[10px] sm:text-xs text-white/50 hover:text-white"
+              >
+                All states
+              </button>
+            </>
+          )}
+
+          {query && (
             <button
               onClick={clearSearch}
-              className="text-orange-400 hover:text-orange-300 underline underline-offset-2 transition-colors"
+              className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1 text-[10px] sm:text-xs text-white/50 hover:text-white"
             >
-              ← Back to {detectedState ? `${detectedState} State` : 'browse'}
+              <X size={10} />
+              Clear Search
             </button>
-          </p>
-        )}
+          )}
+        </div>
 
-        {/* Content Area */}
-        {loading || status === 'idle' ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="w-9 h-9 rounded-full border-2 border-gray-700 border-t-orange-500 animate-spin" />
+        {/* Content */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-[220px] rounded-2xl bg-white/5 animate-pulse"
+              />
+            ))}
           </div>
-        ) : properties.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-28 text-center gap-3">
-            <span className="text-5xl mb-1">🏘️</span>
-            <h3 className="text-lg font-semibold text-white">
+        ) : isEmpty ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-16 text-center">
+            <div className="text-4xl">🏠</div>
+            <h3 className="mt-4 text-sm sm:text-lg font-semibold text-white/80">
               No properties found
             </h3>
-            <p className="text-sm text-gray-500 max-w-xs">
+            <p className="mt-2 max-w-xs text-xs sm:text-sm text-white/40">
               {query
-                ? 'Try a different search term'
+                ? 'Try another search term.'
                 : detectedState
-                  ? `No properties listed in ${detectedState} State yet`
-                  : 'Be the first to add a property!'}
+                ? `No listings in ${detectedState} yet.`
+                : 'Be the first to add a property.'}
             </p>
-            <div className="flex gap-3 flex-wrap justify-center mt-2">
+
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
               {detectedState && !query && (
                 <button
                   onClick={clearLocation}
-                  className="text-sm font-medium text-gray-300 border border-gray-700 hover:border-gray-500 hover:text-white rounded-lg px-4 py-2 transition-colors"
+                  className="rounded-xl border border-white/10 px-4 py-2 text-xs text-white/60 hover:text-white"
                 >
-                  Browse All States
+                  Browse All
                 </button>
               )}
+
               <Link
                 href="/post-property"
-                className="text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-5 py-2 transition-colors shadow-md shadow-orange-500/20"
+                className="rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-black hover:bg-amber-400"
               >
-                Add a Property
+                Add Property
               </Link>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {properties.map((p) => (
-              <PropertyCard key={p.id} property={p} />
+              <div key={p.id} className="transition-transform hover:scale-[1.02]">
+                <PropertyCard property={p} />
+              </div>
             ))}
           </div>
         )}

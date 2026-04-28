@@ -21,8 +21,9 @@ import {
   Sparkles,
   MessageSquare,
   ChevronRight,
+  
 } from 'lucide-react';
-
+const FONT_MONO = "'Instrument Mono', 'JetBrains Mono', monospace";
 const GoogleMap = dynamic(() => import('@/components/GoogleMap'), {
   ssr: false,
 });
@@ -141,17 +142,26 @@ export default function PropertyDetailPage() {
     >
       <div className="relative w-full" style={{ height: '520px' }}>
         {property.imageUrl ? (
-          <Image
-            src={property.imageUrl}
-            alt={property.name}
-            fill
-            className="object-cover"
-            sizes="100vw"
-            priority
-          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+            <div
+              className="absolute inset-0 opacity-[0.03]"
+              style={{
+                backgroundImage:
+                  'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+            />
+            <HomeIcon size={70} className="text-white/10" strokeWidth={1.5} />
+            <span
+              className="text-[9px] font-semibold tracking-[0.2em] uppercase text-white"
+              style={{ fontFamily: FONT_MONO }}
+            >
+              
+              No photo
+            </span>
+          </div>
         ) : (
           <div className="absolute inset-0 bg-[#12141a] flex items-center justify-center">
-            {/* <HomeIcon size={48} className="text-white/10" /> */}
             <GoogleMap singleProperty={property} />
           </div>
         )}

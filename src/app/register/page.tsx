@@ -31,7 +31,7 @@ function getStrength(pw: string): {
 
   const lvl = levels[Math.min(score, 5)];
   const bars = Array.from({ length: 5 }, (_, i) =>
-    i < score ? lvl.color : 'bg-white/10'
+    i < score ? lvl.color : 'bg-white/10',
   );
 
   return { score, label: lvl.label, color: lvl.text, bars };
@@ -91,8 +91,6 @@ export default function RegisterPage() {
       />
 
       <div className="relative z-10 w-full max-w-md">
-
-
         <div className="mb-8 text-center">
           <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-none">
             Join the <br />
@@ -138,9 +136,7 @@ export default function RegisterPage() {
                 placeholder="Password"
                 className={`${inputClass} pr-12`}
                 value={form.password}
-                onChange={(e) =>
-                  setForm({ ...form, password: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
               />
 
@@ -157,10 +153,7 @@ export default function RegisterPage() {
               <div className="space-y-2">
                 <div className="flex gap-1">
                   {strength.bars.map((bar, i) => (
-                    <div
-                      key={i}
-                      className={`h-1 flex-1 rounded-full ${bar}`}
-                    />
+                    <div key={i} className={`h-1 flex-1 rounded-full ${bar}`} />
                   ))}
                 </div>
                 <div className="flex justify-between text-xs">
@@ -169,8 +162,8 @@ export default function RegisterPage() {
                     {strength.score < 3
                       ? 'Add numbers & symbols'
                       : strength.score < 5
-                      ? 'Add special chars'
-                      : 'Great password'}
+                        ? 'Add special chars'
+                        : 'Great password'}
                   </span>
                 </div>
               </div>

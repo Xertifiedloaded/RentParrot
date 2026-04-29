@@ -7,7 +7,14 @@ import { useAuth } from '@/components/AuthProvider';
 import { Property, Review, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
-import { Building2, MessageSquare, Calendar, Plus, MapIcon, MapPin } from 'lucide-react';
+import {
+  Building2,
+  MessageSquare,
+  Calendar,
+  Plus,
+  MapIcon,
+  MapPin,
+} from 'lucide-react';
 
 function StatCard({
   icon,
@@ -21,10 +28,14 @@ function StatCard({
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 hover:bg-white/10 transition">
       <div className="flex items-center gap-4">
-        <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">{icon}</div>
+        <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">
+          {icon}
+        </div>
         <div>
           <p className="text-2xl font-bold text-white">{value}</p>
-          <p className="text-xs uppercase tracking-widest text-white/40">{label}</p>
+          <p className="text-xs uppercase tracking-widest text-white/40">
+            {label}
+          </p>
         </div>
       </div>
     </div>
@@ -64,7 +75,9 @@ export default function DashboardPage() {
   const [myProperties, setMyProperties] = useState<Property[]>([]);
   const [myReviews, setMyReviews] = useState<Review[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'properties' | 'reviews'>('properties');
+  const [activeTab, setActiveTab] = useState<'properties' | 'reviews'>(
+    'properties',
+  );
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
@@ -78,7 +91,7 @@ export default function DashboardPage() {
       fetch(`/api/reviews?userId=${user.id}`).then((r) => r.json()),
     ]).then(([propData, revData]) => {
       const filtered = (propData.properties || []).filter(
-        (p: Property) => p.user?.id === user.id
+        (p: Property) => p.user?.id === user.id,
       );
       setMyProperties(filtered);
       setMyReviews(revData.reviews || []);
@@ -113,7 +126,7 @@ export default function DashboardPage() {
 
   const memberSince = formatDistanceToNow(
     new Date((user as any).createdAt || Date.now()),
-    { addSuffix: true }
+    { addSuffix: true },
   );
 
   return (
@@ -126,8 +139,7 @@ export default function DashboardPage() {
               Dashboard
             </p>
             <h1 className="text-2xl md:text-4xl font-bold">
-              Welcome back,{' '}
-              <span className="text-orange-500">{user.name}</span>
+              Welcome back, <span className="text-orange-500">{user.name}</span>
             </h1>
           </div>
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/10 text-lg font-bold text-orange-400 border border-orange-500/30">
@@ -228,7 +240,9 @@ export default function DashboardPage() {
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div>
                         <h3 className="font-semibold text-lg">{p.name}</h3>
-                        <p className="text-sm flex items-center gap-1 capitalize text-white/40"><MapPin size={12}/> {p.address}</p>
+                        <p className="text-sm flex items-center gap-1 capitalize text-white/40">
+                          <MapPin size={12} /> {p.address}
+                        </p>
                         <p className="text-xs text-white/30 mt-1">
                           Added{' '}
                           {formatDistanceToNow(new Date(p.createdAt), {
@@ -304,7 +318,7 @@ export default function DashboardPage() {
                       href={`/properties/${r.property.id}`}
                       className="mt-4  flex items-center gap-1 capitalize  text-sm text-orange-400 hover:text-orange-300"
                     >
-                      <MapPin size={12}/> {r.property.name}
+                      <MapPin size={12} /> {r.property.name}
                     </Link>
                   )}
                 </div>

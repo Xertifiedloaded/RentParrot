@@ -18,26 +18,29 @@ export default function PropertiesPage() {
 
   const { status, detectedState, clearLocation } = useUserLocation();
 
-  const fetchProperties = useCallback(async (stateFilter?: string) => {
-    setLoading(true);
-    try {
-      let url = '/api/properties';
+  const fetchProperties = useCallback(
+    async (stateFilter?: string) => {
+      setLoading(true);
+      try {
+        let url = '/api/properties';
 
-      if (query) {
-        url += `?search=${encodeURIComponent(query)}`;
-      } else if (stateFilter) {
-        url += `?state=${encodeURIComponent(stateFilter)}`;
+        if (query) {
+          url += `?search=${encodeURIComponent(query)}`;
+        } else if (stateFilter) {
+          url += `?state=${encodeURIComponent(stateFilter)}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+        setProperties(data.properties || []);
+      } catch {
+        setProperties([]);
+      } finally {
+        setLoading(false);
       }
-
-      const res = await fetch(url);
-      const data = await res.json();
-      setProperties(data.properties || []);
-    } catch {
-      setProperties([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [query]);
+    },
+    [query],
+  );
 
   useEffect(() => {
     if (status === 'idle') return;
@@ -75,7 +78,9 @@ export default function PropertiesPage() {
               className="text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-amber-400/60 font-semibold"
               style={{ fontFamily: FONT_MONO }}
             >
-              {detectedState && !query ? `${detectedState} State` : 'All Nigeria'}
+              {detectedState && !query
+                ? `${detectedState} State`
+                : 'All Nigeria'}
             </p>
 
             <h1 className="mt-1 text-xl sm:text-3xl font-black tracking-tight wrap-break-word">
@@ -94,10 +99,10 @@ export default function PropertiesPage() {
               {query
                 ? `Results for "${query}"`
                 : detectedState
-                ? `Near your location in ${detectedState}`
-                : status === 'idle'
-                ? 'Detecting location…'
-                : 'Browse trusted properties across Nigeria'}
+                  ? `Near your location in ${detectedState}`
+                  : status === 'idle'
+                    ? 'Detecting location…'
+                    : 'Browse trusted properties across Nigeria'}
             </p>
           </div>
 
@@ -205,8 +210,8 @@ export default function PropertiesPage() {
               {query
                 ? 'Try another search term.'
                 : detectedState
-                ? `No listings in ${detectedState} yet.`
-                : 'Be the first to add a property.'}
+                  ? `No listings in ${detectedState} yet.`
+                  : 'Be the first to add a property.'}
             </p>
 
             <div className="mt-5 flex flex-wrap justify-center gap-3">
@@ -230,7 +235,10 @@ export default function PropertiesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {properties.map((p) => (
-              <div key={p.id} className="transition-transform hover:scale-[1.02]">
+              <div
+                key={p.id}
+                className="transition-transform hover:scale-[1.02]"
+              >
                 <PropertyCard property={p} />
               </div>
             ))}

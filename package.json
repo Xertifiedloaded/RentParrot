@@ -16,6 +16,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.91.1",
     "@prisma/client": "^6.1.0",
     "@tailwindcss/postcss": "^4.2.4",
     "@types/google.maps": "^3.55.0",

@@ -161,7 +161,7 @@ export interface AuthContextType {
 export interface Props {
   target: number;
   suffix?: string;
-  duration?: number; 
+  duration?: number;
   className?: string;
 }
 

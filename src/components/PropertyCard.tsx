@@ -16,7 +16,10 @@ export default function PropertyCard({ property }: { property: Property }) {
       href={`/properties/${property.id}`}
       className="group relative flex flex-col bg-[#0d0f13] border border-white/[0.07] rounded-2xl overflow-hidden transition-all duration-300 hover:border-amber-500/25 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40"
     >
-      <div className="relative w-full overflow-hidden bg-[#111318]" style={{ aspectRatio: '4/3' }}>
+      <div
+        className="relative w-full overflow-hidden bg-[#111318]"
+        style={{ aspectRatio: '4/3' }}
+      >
         {imageUrl ? (
           <>
             <Image
@@ -102,7 +105,12 @@ export default function PropertyCard({ property }: { property: Property }) {
               <Star
                 key={s}
                 size={9}
-                className={s <= Math.min(Math.ceil(reviewCount / 3), 5) && reviewCount > 0 ? 'text-amber-400 fill-amber-400' : 'text-white/[0.08]'}
+                className={
+                  s <= Math.min(Math.ceil(reviewCount / 3), 5) &&
+                  reviewCount > 0
+                    ? 'text-amber-400 fill-amber-400'
+                    : 'text-white/[0.08]'
+                }
               />
             ))}
           </div>
@@ -110,7 +118,9 @@ export default function PropertyCard({ property }: { property: Property }) {
             className="text-[10px] text-white/20"
             style={{ fontFamily: FONT_MONO }}
           >
-            {formatDistanceToNow(new Date(property.createdAt), { addSuffix: true })}
+            {formatDistanceToNow(new Date(property.createdAt), {
+              addSuffix: true,
+            })}
           </span>
         </div>
       </div>

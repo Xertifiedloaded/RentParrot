@@ -7,7 +7,14 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import { LAGOS_HINTS, NIGERIAN_STATES } from '@/lib';
-import { X, UploadCloud } from 'lucide-react';
+import {
+  X,
+  UploadCloud,
+  MapPin,
+  Home,
+  FileText,
+  Navigation,
+} from 'lucide-react';
 
 function Field({
   label,
@@ -19,18 +26,42 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[11px] font-semibold uppercase tracking-widest text-white/40">
+    <div className="space-y-2">
+      <label className="flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400">
         {label}
-        {required && <span className="ml-1 text-amber-500">*</span>}
+        {required && <span className="text-amber-400">*</span>}
       </label>
       {children}
     </div>
   );
 }
 
+function Section({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-xl">
+      <div className="flex items-center gap-3 border-b border-white/5 px-5 py-4">
+        <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400">
+          {icon}
+        </div>
+        <h2 className="text-sm sm:text-base font-semibold text-white">
+          {title}
+        </h2>
+      </div>
+      <div className="space-y-5 p-5">{children}</div>
+    </section>
+  );
+}
+
 const inputCls =
-  'w-full rounded-lg bg-white/[0.04] px-3.5 py-2.5 text-sm text-white/80 placeholder-white/20 ring-1 ring-white/[0.08] outline-none transition focus:bg-white/[0.06] focus:ring-amber-500/40';
+  'w-full rounded-xl border border-white/10 bg-zinc-900/70 px-4 py-3 text-xs sm:text-sm text-white placeholder:text-xs placeholder:text-zinc-500 outline-none transition-all focus:border-amber-400/60 focus:ring-2 focus:ring-amber-400/10';
 
 export default function PostPropertyPage() {
   const { user, loading } = useAuth();
@@ -49,6 +80,7 @@ export default function PostPropertyPage() {
     longitude: '',
     description: '',
   });
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -66,11 +98,14 @@ export default function PostPropertyPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+
     if (!file) return;
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be under 5 MB');
       return;
     }
+
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   };
@@ -83,12 +118,16 @@ export default function PostPropertyPage() {
 
   const handleGeocodeAddress = async () => {
     if (!form.address) return;
+
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
     if (!apiKey || apiKey === 'your-google-maps-api-key') {
-      toast.error('Add Google Maps API key to geocode addresses');
+      toast.error('Add Google Maps API key');
       return;
     }
+
     setGeocoding(true);
+
     try {
       const parts = [
         form.address,
@@ -99,22 +138,25 @@ export default function PostPropertyPage() {
       ]
         .filter(Boolean)
         .join(', ');
+
       const res = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(parts)}&key=${apiKey}`,
       );
+
       const data = await res.json();
+
       if (data.results?.[0]) {
         const { lat, lng } = data.results[0].geometry.location;
+
         setForm((prev) => ({
           ...prev,
           latitude: lat.toString(),
           longitude: lng.toString(),
         }));
-        toast.success(`Found: ${data.results[0].formatted_address}`);
+
+        toast.success('Coordinates found');
       } else {
-        toast.error(
-          'Address not found. Try being more specific or enter coordinates manually.',
-        );
+        toast.error('Address not found');
       }
     } catch {
       toast.error('Geocoding failed');
@@ -126,29 +168,35 @@ export default function PostPropertyPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
     if (!form.town) {
-      setError('Please enter the town or area for this property.');
+      setError('Please enter town / area.');
       return;
     }
+
     if (!form.latitude || !form.longitude) {
-      setError(
-        "Please add coordinates. Click 'Get Coordinates' or enter manually.",
-      );
+      setError('Please add coordinates.');
       return;
     }
+
     setSubmitting(true);
+
     try {
-      // Always use FormData so we can optionally attach an image
       const fd = new FormData();
+
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+
       if (imageFile) fd.append('image', imageFile);
 
       const res = await fetch('/api/properties', {
         method: 'POST',
         body: fd,
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create property');
+
+      if (!res.ok) throw new Error(data.error);
+
       toast.success('Property added!');
       router.push(`/properties/${data.property.id}`);
     } catch (err: any) {
@@ -160,119 +208,82 @@ export default function PostPropertyPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#0c0f14]">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-amber-500" />
+      <div className="flex h-screen items-center justify-center bg-black">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-700 border-t-amber-400" />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0c0f14] px-4">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="text-5xl opacity-20">🔒</div>
-          <p className="text-base font-semibold text-white/50">
-            Sign in required
-          </p>
-          <p className="text-sm text-white/25">
-            You need to be signed in to post a property.
-          </p>
-          <Link
-            href="/login"
-            className="mt-2 rounded-lg bg-amber-500 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black hover:bg-amber-400 transition-all"
-          >
-            Sign In
-          </Link>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-black px-6">
+        <Link
+          href="/login"
+          className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-semibold text-black"
+        >
+          Sign In
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0f14] font-['Geist_Mono',_'IBM_Plex_Mono',_monospace] text-white">
-      {/* Page header */}
-      <div className="border-b border-white/[0.06] bg-[#0e1117]">
-        <div className="mx-auto max-w-2xl px-6 py-8">
-          <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">
+    <div className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-400">
             New Listing
           </p>
-          <h1 className="text-2xl font-bold text-white/90">Add a Property</h1>
-          <p className="mt-1 text-sm text-white/30">
-            List a property to collect tenant reviews
+          <h1 className="mt-2 text-2xl sm:text-3xl font-bold">Post Property</h1>
+          <p className="mt-2 text-sm sm:text-base text-zinc-400">
+            Add a property and collect tenant insights.
           </p>
         </div>
-      </div>
 
-      <div className="mx-auto max-w-2xl px-6 py-8 space-y-4">
         {error && (
-          <div className="flex items-start gap-3 rounded-lg bg-red-500/10 px-4 py-3 ring-1 ring-red-500/20">
-            <span className="mt-0.5 text-red-400">⚠</span>
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs sm:text-sm text-red-300">
+            {error}
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-xl bg-white/[0.03] ring-1 ring-white/[0.07] divide-y divide-white/[0.05]"
-        >
-          {/* Section: Identity */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Property Identity
-            </p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Section icon={<Home size={18} />} title="Property Details">
             <Field label="Property Name" required>
               <input
-                type="text"
-                placeholder="e.g. Sunshine Apartments, Lekki Phase 1"
                 value={form.name}
                 onChange={set('name')}
-                required
                 className={inputCls}
+                placeholder="Sunshine Apartments"
               />
             </Field>
-          </div>
+          </Section>
 
-          {/* Section: Photo */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Photo{' '}
-              <span className="normal-case font-normal text-white/20">
-                (optional)
-              </span>
-            </p>
-
+          <Section icon={<UploadCloud size={18} />} title="Property Photo">
             {imagePreview ? (
-              <div
-                className="relative w-full rounded-xl overflow-hidden ring-1 ring-white/[0.08]"
-                style={{ aspectRatio: '16/9' }}
-              >
+              <div className="relative aspect-video overflow-hidden rounded-2xl">
                 <Image
                   src={imagePreview}
-                  alt="Property preview"
+                  alt="Preview"
                   fill
                   className="object-cover"
                 />
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white/80 hover:bg-black/80 hover:text-white transition-all"
-                  aria-label="Remove image"
+                  className="absolute right-3 top-3 rounded-full bg-black/70 p-2"
                 >
-                  <X size={14} />
+                  <X size={16} />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-white/[0.12] py-8 text-center transition-all hover:border-amber-500/40 hover:bg-white/[0.02]"
+                className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-zinc-700 py-10 hover:border-amber-400"
               >
-                <UploadCloud size={24} className="text-white/20" />
-                <span className="text-xs text-white/30">
-                  Click to upload a photo
-                </span>
-                <span className="text-[11px] text-white/15">
-                  JPG, PNG, WEBP · max 5 MB
+                <UploadCloud size={26} />
+                <span className="text-xs sm:text-sm text-zinc-400">
+                  Upload property image
                 </span>
               </button>
             )}
@@ -280,222 +291,109 @@ export default function PostPropertyPage() {
             <input
               ref={fileInputRef}
               type="file"
+              className="hidden"
               accept="image/jpeg,image/png,image/webp"
               onChange={handleImageChange}
-              className="hidden"
             />
-          </div>
+          </Section>
 
-          {/* Section: Location */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Location
-            </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="sm:col-span-2">
-                <Field label="Street Address" required>
-                  <input
-                    type="text"
-                    placeholder="e.g. 14 Admiralty Way"
-                    value={form.address}
-                    onChange={set('address')}
-                    required
-                    className={inputCls}
-                  />
-                </Field>
-              </div>
-              <Field label="State" required>
+          <Section icon={<MapPin size={18} />} title="Location">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Street Address" required>
+                <input
+                  value={form.address}
+                  onChange={set('address')}
+                  className={inputCls}
+                />
+              </Field>
+
+              <Field label="State">
                 <select
                   value={form.state}
                   onChange={set('state')}
-                  required
                   className={inputCls}
                 >
                   {NIGERIAN_STATES.map((s) => (
-                    <option key={s} value={s} className="bg-[#0e1117]">
+                    <option key={s} value={s}>
                       {s}
                     </option>
                   ))}
                 </select>
               </Field>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Town / Area" required>
                 <input
-                  type="text"
-                  placeholder="e.g. Lekki, Ikeja, Yaba"
                   value={form.town}
                   onChange={set('town')}
-                  required
                   className={inputCls}
                 />
               </Field>
-              <Field label="Community / Estate">
+
+              <Field label="Community">
                 <input
-                  type="text"
-                  placeholder="e.g. Gowon Estate, Lekki Phase 1"
                   value={form.community}
                   onChange={set('community')}
                   className={inputCls}
                 />
               </Field>
             </div>
+          </Section>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Nearest Bus Stop / Landmark">
-                <input
-                  type="text"
-                  placeholder="e.g. Cele Bus Stop, Under Bridge"
-                  value={form.nearestBusStop}
-                  onChange={set('nearestBusStop')}
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="Postal Code">
-                <input
-                  type="text"
-                  placeholder="e.g. 100001"
-                  value={form.postalCode}
-                  onChange={set('postalCode')}
-                  className={inputCls}
-                />
-              </Field>
-            </div>
-          </div>
-
-          {/* Section: Coordinates */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Coordinates
-            </p>
-
+          <Section icon={<Navigation size={18} />} title="Coordinates">
             <button
               type="button"
               onClick={handleGeocodeAddress}
-              disabled={geocoding || !form.address}
-              className="flex items-center gap-2 rounded-lg bg-white/[0.05] px-4 py-2.5 text-xs font-semibold text-white/60 ring-1 ring-white/[0.09] transition-all hover:bg-white/[0.09] hover:text-white/80 disabled:opacity-30 disabled:cursor-not-allowed"
+              disabled={geocoding}
+              className="rounded-xl bg-amber-400 px-4 py-3 text-xs sm:text-sm font-semibold text-black"
             >
-              {geocoding ? (
-                <>
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border border-white/20 border-t-white/60" />
-                  Locating…
-                </>
-              ) : (
-                <>📍 Get Coordinates from Address</>
-              )}
+              {geocoding ? 'Locating...' : 'Get Coordinates'}
             </button>
 
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Latitude" required>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="6.4281"
-                  value={form.latitude}
-                  onChange={set('latitude')}
-                  required
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="Longitude" required>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="3.4219"
-                  value={form.longitude}
-                  onChange={set('longitude')}
-                  required
-                  className={inputCls}
-                />
-              </Field>
-            </div>
-
-            {form.latitude && form.longitude && (
-              <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3.5 py-2 ring-1 ring-emerald-500/20">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs font-semibold text-emerald-300">
-                  {parseFloat(form.latitude).toFixed(4)},{' '}
-                  {parseFloat(form.longitude).toFixed(4)}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Section: Description */}
-          <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Description
-            </p>
-            <Field label="About this property">
-              <textarea
-                placeholder="Briefly describe this property or estate…"
-                value={form.description}
-                onChange={set('description')}
-                rows={4}
-                className={`${inputCls} resize-none`}
+              <input
+                value={form.latitude}
+                onChange={set('latitude')}
+                className={inputCls}
+                placeholder="Latitude"
               />
-            </Field>
-          </div>
+              <input
+                value={form.longitude}
+                onChange={set('longitude')}
+                className={inputCls}
+                placeholder="Longitude"
+              />
+            </div>
+          </Section>
 
-          {/* Actions */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4">
-            <Link
-              href="/properties"
-              className="rounded-lg px-4 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/30 transition-all hover:text-white/60"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex items-center gap-2 rounded-lg bg-amber-500 px-6 py-2.5 text-xs font-bold uppercase tracking-widest text-black transition-all hover:bg-amber-400 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? (
-                <>
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border border-black/20 border-t-black/70" />
-                  Adding…
-                </>
-              ) : (
-                'Add Property'
-              )}
-            </button>
+          <Section icon={<FileText size={18} />} title="Description">
+            <textarea
+              rows={5}
+              value={form.description}
+              onChange={set('description')}
+              className={`${inputCls} resize-none`}
+              placeholder="Describe this property..."
+            />
+          </Section>
+
+          <div className="sticky bottom-0 left-0 right-0 border-t border-white/5 bg-black/80 backdrop-blur-xl">
+            <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3 sm:px-6">
+              <Link
+                href="/properties"
+                className="flex-1 rounded-lg border border-zinc-700/70 px-3 py-2 text-center text-xs sm:text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+              >
+                Cancel
+              </Link>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 rounded-lg bg-amber-400 px-3 py-2 text-xs sm:text-sm font-semibold text-black transition active:scale-[0.98] disabled:opacity-50"
+              >
+                {submitting ? 'Adding...' : 'Add Property'}
+              </button>
+            </div>
           </div>
         </form>
-
-        {/* Lagos coordinate hints */}
-        <div className="rounded-xl bg-amber-500/[0.05] px-6 py-5 ring-1 ring-amber-500/20">
-          <p className="mb-3 text-[11px] font-bold uppercase tracking-widest text-amber-400/70">
-            💡 Lagos Coordinate Hints
-          </p>
-          <ul className="space-y-2">
-            {LAGOS_HINTS.map(({ emoji, label, coords }) => (
-              <li
-                key={label}
-                className="flex items-center justify-between gap-4"
-              >
-                <span className="text-xs text-white/40">
-                  {emoji} {label}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const [lat, lng] = coords.split(',').map((s) => s.trim());
-                    setForm((prev) => ({
-                      ...prev,
-                      latitude: lat,
-                      longitude: lng,
-                    }));
-                    toast.success(`Coordinates set to ${label}`);
-                  }}
-                  className="rounded bg-amber-500/10 px-2 py-0.5 text-[11px] font-mono font-semibold text-amber-400/80 ring-1 ring-amber-500/20 transition hover:bg-amber-500/20 hover:text-amber-300"
-                >
-                  {coords}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </div>
   );

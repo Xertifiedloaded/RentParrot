@@ -1,5 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { Category } from '@prisma/client';
+
+const NEGATIVE_CATEGORIES = new Set<Category>([
+  Category.BAD_ELECTRICITY,
+  Category.BAD_WATER,
+  Category.BAD_LANDLORD,
+  Category.UNFAIR_RENT_INCREASE,
+  Category.POOR_SANITATION,
+  Category.BAD_ROAD,
+  Category.POOR_NETWORK,
+]);
+
+const POSITIVE_CATEGORIES = new Set<Category>([
+  Category.GOOD_ELECTRICITY,
+  Category.GOOD_WATER,
+  Category.GOOD_LANDLORD,
+]);
+
+const CATEGORY_LABELS: Record<Category, string> = {
+  GOOD_ELECTRICITY: 'stable electricity',
+  BAD_ELECTRICITY: 'poor electricity',
+  GOOD_WATER: 'good water supply',
+  BAD_WATER: 'poor water supply',
+  GOOD_LANDLORD: 'responsive landlord',
+  BAD_LANDLORD: 'problematic landlord',
+  UNFAIR_RENT_INCREASE: 'unfair rent increases',
+  POOR_SANITATION: 'poor sanitation',
+  BAD_ROAD: 'bad road access',
+  POOR_NETWORK: 'poor network coverage',
+  OTHER: 'other concerns',
+};
 
 export async function GET(
   _request: NextRequest,
@@ -18,72 +49,60 @@ export async function GET(
       });
     }
 
-    const reviewText = reviews
-      .map((r) => `[${r.categories.join(', ')}]: ${r.comment}`)
-      .join('\n');
+    let positiveScore = 0;
+    let negativeScore = 0;
+    const positiveSeen = new Set<string>();
+    const negativeSeen = new Set<string>();
 
-    const prompt = `You are a helpful assistant analyzing tenant reviews for a property in Lagos, Nigeria. Based on the following reviews, generate a concise 2-3 sentence summary that:
-1. Highlights the main advantages and disadvantages.
-2. Gives a clear recommendation: should someone rent this property or avoid it?
-Be direct and helpful. Respond with just the summary paragraph, no preamble.
-
-Reviews:
-${reviewText}`;
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
-
-    if (!response.ok) {
-      // Fallback: generate simple summary manually
-      const categoryCounts: Record<string, number> = {};
-      reviews.forEach((r) => {
-        r.categories.forEach((cat) => {
-          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-        });
-      });
-
-      const topPositive = Object.entries(categoryCounts)
-        .filter(([cat]) => !cat.toLowerCase().includes('issue') && !cat.toLowerCase().includes('problem'))
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([cat]) => cat.toLowerCase().replace(/_/g, ' '))
-        .join(', ');
-
-      const topNegative = Object.entries(categoryCounts)
-        .filter(([cat]) => cat.toLowerCase().includes('issue') || cat.toLowerCase().includes('problem'))
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([cat]) => cat.toLowerCase().replace(/_/g, ' '))
-        .join(', ');
-
-      let recommendation = 'It is recommended to avoid this property.';
-      if (topPositive && !topNegative) recommendation = 'This property seems good to rent.';
-      else if (topPositive && topNegative) recommendation = 'Consider the positives and negatives before deciding.';
-
-      return NextResponse.json({
-        summary: `This property has ${reviews.length} review(s). Advantages: ${topPositive || 'None'}. Disadvantages: ${topNegative || 'None'}. ${recommendation}`,
-      });
+    for (const review of reviews) {
+      for (const cat of review.categories) {
+        const label = CATEGORY_LABELS[cat];
+        if (POSITIVE_CATEGORIES.has(cat)) {
+          positiveScore++;
+          positiveSeen.add(label);
+        } else if (NEGATIVE_CATEGORIES.has(cat)) {
+          negativeScore++;
+          negativeSeen.add(label);
+        }
+      }
     }
 
-    const data = await response.json();
-    const summary = data.content?.[0]?.text || 'Summary unavailable.';
+    const total = positiveScore + negativeScore;
+    const positiveRatio = total > 0 ? positiveScore / total : 0;
+
+    let recommendation: string;
+    if (negativeScore === 0 && positiveScore > 0) {
+      recommendation =
+        'Tenants are largely satisfied — this property is worth considering.';
+    } else if (positiveRatio >= 0.65) {
+      recommendation =
+        'Despite some concerns, this property is generally well regarded.';
+    } else if (positiveRatio >= 0.35) {
+      recommendation =
+        'This property has mixed reviews — visit and inspect carefully before committing.';
+    } else {
+      recommendation =
+        'Most tenants report significant issues. Approach with caution or you can avoid this Apartment.';
+    }
+
+    const positives = [...positiveSeen].slice(0, 3).join(', ');
+    const negatives = [...negativeSeen].slice(0, 3).join(', ');
+
+    let summary: string;
+
+    if (positives && negatives) {
+      summary = `Tenants highlight ${positives} as positives, but report concerns around ${negatives}. ${recommendation}`;
+    } else if (negatives && !positives) {
+      summary = `Tenants report concerns around ${negatives} with no standout positives mentioned. ${recommendation}`;
+    } else if (positives && !negatives) {
+      summary = `Tenants consistently praise ${positives} with no major complaints reported. ${recommendation}`;
+    } else {
+      summary = `This property has ${reviews.length} review(s) with general feedback. ${recommendation}`;
+    }
 
     return NextResponse.json({ summary });
   } catch (error) {
-    console.error('AI summary error:', error);
-
-    // Safe fallback
+    console.error('Review summary error:', error);
     return NextResponse.json({
       summary:
         'Summary could not be generated at this time. Please check the reviews manually.',

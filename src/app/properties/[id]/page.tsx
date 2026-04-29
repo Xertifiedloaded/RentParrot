@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import ReviewCard from '@/components/ReviewCard';
 import {
   Property,
@@ -20,37 +19,37 @@ import {
   ArrowLeft,
   Sparkles,
   MessageSquare,
-  ChevronRight,
+  Building2,
+  ThumbsUp,
+  ThumbsDown,
+  BarChart3,
+  Users,
+  PenSquare,
 } from 'lucide-react';
 
-const FONT_MONO = "'Instrument Mono', 'JetBrains Mono', monospace";
-const GoogleMap = dynamic(() => import('@/components/GoogleMap'), { ssr: false });
+const GoogleMap = dynamic(() => import('@/components/GoogleMap'), {
+  ssr: false,
+});
 
 export default function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState('');
+  const [summary, setSummary] = useState<string | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('all');
 
-  useEffect(() => {
-    fetch(`/api/properties/${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setProperty(data.property);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [id]);
+  const reviews = property?.reviews || [];
 
   const loadSummary = async () => {
     setSummaryLoading(true);
+
     try {
       const res = await fetch(`/api/summary/${id}`);
       const data = await res.json();
-      setSummary(data.summary);
+      setSummary(data.summary || 'Summary unavailable.');
     } catch {
       setSummary('Summary unavailable.');
     } finally {
@@ -58,15 +57,40 @@ export default function PropertyDetailPage() {
     }
   };
 
+  useEffect(() => {
+    const fetchProperty = async () => {
+      try {
+        const res = await fetch(`/api/properties/${id}`);
+        const data = await res.json();
+        setProperty(data.property);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [id]);
+
+  useEffect(() => {
+    if (!property || reviews.length === 0) {
+      setSummaryLoading(false);
+      return;
+    }
+
+    loadSummary();
+  }, [property, id]);
+
   if (loading)
     return (
-      <div className="flex h-screen items-center justify-center bg-[#08090c]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative h-10 w-10">
-            <div className="absolute inset-0 rounded-full border border-[#c8a96e]/20 animate-ping" />
-            <div className="h-10 w-10 rounded-full border border-[#c8a96e]/40 border-t-[#c8a96e] animate-spin" />
+      <div className="flex h-screen items-center justify-center bg-[#080a0f]">
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border border-amber-400/20 animate-ping" />
+            <div className="h-12 w-12 rounded-full border-2 border-white/10 border-t-amber-400 animate-spin" />
           </div>
-          <p className="text-[11px] tracking-[0.3em] uppercase text-white/20">
+          <p className="text-xs tracking-[0.3em] uppercase text-white/30 font-medium">
             Loading property
           </p>
         </div>
@@ -75,29 +99,17 @@ export default function PropertyDetailPage() {
 
   if (!property)
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#08090c] text-center px-6">
-        <div className="w-20 h-20 rounded-2xl bg-white/3 border border-white/6 flex items-center justify-center">
-          <HomeIcon size={28} className="text-white/15" />
-        </div>
-        <p className="text-base font-semibold text-white/40 mb-1">Property not found</p>
-        <p className="text-xs text-white/20">
-          This property may have been removed or doesn't exist.
-        </p>
-        <Link
-          href="/properties"
-          className="flex items-center gap-2 rounded-xl border border-white/8 bg-white/3 px-5 py-2.5 text-xs font-medium text-white/40 hover:bg-white/6 hover:text-white/60 transition-all"
-        >
-          <ArrowLeft size={13} /> Back to Properties
-        </Link>
+      <div className="flex min-h-screen items-center justify-center bg-[#080a0f] text-white">
+        Property not found
       </div>
     );
 
-  const reviews = property.reviews || [];
   const positiveReviews = reviews.filter(
-    (r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c))
+    (r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)),
   );
+
   const negativeReviews = reviews.filter((r) =>
-    r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c))
+    r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)),
   );
   const displayedReviews =
     activeTab === 'positive'
@@ -110,103 +122,189 @@ export default function PropertyDetailPage() {
   reviews.forEach((r) =>
     r.categories.forEach((cat) => {
       categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
-    })
+    }),
   );
   const topCategories = Object.entries(categoryCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
   const tabs: { key: Tab; label: string; count: number }[] = [
-    { key: 'all', label: 'All Reviews', count: reviews.length },
+    { key: 'all', label: 'All', count: reviews.length },
     { key: 'positive', label: 'Positive', count: positiveReviews.length },
     { key: 'negative', label: 'Issues', count: negativeReviews.length },
   ];
 
   const scorePercent =
-    reviews.length > 0 ? Math.round((positiveReviews.length / reviews.length) * 100) : 0;
+    reviews.length > 0
+      ? Math.round((positiveReviews.length / reviews.length) * 100)
+      : 0;
+
+  const scoreColor =
+    reviews.length === 0
+      ? 'text-white/30'
+      : scorePercent >= 70
+        ? 'text-emerald-400'
+        : scorePercent >= 40
+          ? 'text-amber-400'
+          : 'text-red-400';
+
+  const scoreBarColor =
+    scorePercent >= 70 ? '#4ade80' : scorePercent >= 40 ? '#facc15' : '#f87171';
 
   return (
-    <div className="min-h-screen bg-[#08090c] text-white font-sans">
-      {/* Hero Section */}
-      <div className="relative w-full h-100 sm:h-75 md:h-130 flex items-center justify-center bg-[#12141a]">
-        <div className="flex flex-col items-center justify-center gap-2">
-          <HomeIcon size={60} className="text-white/10" strokeWidth={1.5} />
-          <span className="text-[9px] sm:text-[8px] font-mono uppercase text-white/50 tracking-wide">
-            No photo available
-          </span>
-        </div>
+    <div className="min-h-screen bg-[#080a0f] text-white">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-87.5 rounded-full bg-amber-500/6 blur-[140px]" />
+      </div>
 
-        <div className="absolute inset-0 bg-linear-to-t from-[#08090c] via-[#08090c]/60 to-transparent" />
-
-        <div className="absolute bottom-4 left-4 sm:left-2 sm:bottom-2 text-white">
-          <h1 className="text-2xl sm:text-xl md:text-5xl font-bold leading-tight">
-            {property.name}
-          </h1>
-          <p className="text-sm capitalize sm:text-xs text-white/50 flex items-center gap-1">
-            <MapPin size={12} /> {property.address}
-          </p>
-        </div>
-
-        <div className="absolute top-4 left-4">
+      <div className="relative z-20 border-b border-white/6 bg-[#080a0f]/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link
             href="/properties"
-            className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-black/30 px-4 py-2 text-xs font-medium text-white/60 backdrop-blur-md hover:bg-white/10 hover:text-white/80 transition-all"
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-white/60 hover:text-white hover:bg-white/5 transition-all"
           >
-            <ArrowLeft size={12} /> Properties
+            <ArrowLeft size={15} />
+            <span>Properties</span>
           </Link>
+
+          {user && (
+            <Link
+              href={`/post-review?propertyId=${property.id}`}
+              className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-black hover:bg-amber-400 active:scale-95 transition-all shadow-lg shadow-amber-500/20"
+            >
+              <PenSquare size={14} />
+              <span>Write Review</span>
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Stats Section */}
-      <div className="border-b border-white/5 bg-[#0c0e13]">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col sm:flex-row items-stretch divide-y sm:divide-x sm:divide-y-0 divide-white/5">
+      <div className="relative z-10 border-b border-white/6 bg-linear-to-b from-white/3 to-transparent">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
+            <div className="shrink-0 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-3xl border border-amber-500/20 bg-amber-500/10 shadow-lg shadow-amber-500/10">
+              <Building2
+                size={28}
+                className="text-amber-400 sm:w-8 sm:h-8"
+                strokeWidth={1.6}
+              />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/8 px-3 py-1.5">
+                <div className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                  Rental Property
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+                {property.name}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+                <span className="flex capitalize items-center gap-2 text-white/90 font-medium">
+                  <MapPin size={14} className="text-amber-400 shrink-0" />
+                  {property.address}
+                </span>
+
+                {property.town && (
+                  <>
+                    <span className="hidden sm:block text-white/20">•</span>
+                    <span className="text-white/65">{property.town}</span>
+                  </>
+                )}
+
+                <span className="hidden sm:block text-white/20">•</span>
+
+                <span className="text-white/65">{property.state}</span>
+              </div>
+
+              {property.description && (
+                <p className="mt-5 max-w-2xl text-sm sm:text-base text-white/70 leading-7">
+                  {property.description}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative z-10 border-b border-white/6 bg-[#0c0f16]/80 backdrop-blur-xl">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {[
-              { label: 'Total Reviews', value: reviews.length, icon: '💬', color: 'text-white/70' },
-              { label: 'Positive', value: positiveReviews.length, icon: '✅', color: 'text-emerald-400' },
-              { label: 'Issues', value: negativeReviews.length, icon: '⚠️', color: 'text-red-400' },
               {
-                label: 'Satisfaction',
-                value: `${scorePercent}%`,
-                icon: '📊',
-                color: reviews.length === 0
-                  ? 'text-white/30'
-                  : scorePercent >= 70
-                    ? 'text-emerald-400'
-                    : 'text-amber-400',
+                label: 'Reviews',
+                value: reviews.length,
+                icon: <Users size={16} className="text-white/70" />,
+                color: 'text-white',
+                bg: 'bg-white/[0.03]',
               },
-            ].map(({ label, value, icon, color }) => (
+              {
+                label: 'Positive',
+                value: positiveReviews.length,
+                icon: <ThumbsUp size={16} className="text-emerald-400" />,
+                color: 'text-emerald-400',
+                bg: 'bg-emerald-500/5',
+              },
+              {
+                label: 'Issues',
+                value: negativeReviews.length,
+                icon: <ThumbsDown size={16} className="text-red-400" />,
+                color: 'text-red-400',
+                bg: 'bg-red-500/5',
+              },
+              {
+                label: 'Score',
+                value: reviews.length === 0 ? '—' : `${scorePercent}%`,
+                icon: <BarChart3 size={16} className="text-amber-400" />,
+                color: scoreColor,
+                bg: 'bg-amber-500/5',
+              },
+            ].map(({ label, value, icon, color, bg }) => (
               <div
                 key={label}
-                className="flex flex-col items-center justify-center gap-1 px-4 py-4 flex-1"
+                className={`rounded-2xl border border-white/8 ${bg} px-4 py-4 sm:py-5 backdrop-blur-xl transition-all hover:border-white/15`}
               >
-                <span className="text-[10px] sm:text-[9px] text-white/25 tracking-wide">{icon} {label}</span>
-                <span className={`text-xl sm:text-lg font-bold ${color}`}>{value}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-white/45">
+                    {label}
+                  </span>
+                  {icon}
+                </div>
+
+                <div
+                  className={`text-2xl sm:text-3xl font-black tracking-tight ${color}`}
+                >
+                  {value}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="mx-auto max-w-6xl px-6 py-8 sm:py-6 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
         <div className="space-y-6">
           {topCategories.length > 0 && (
-            <section className="mb-6">
-              <h2 className="mb-2 text-[10px] sm:text-[9px] font-semibold uppercase tracking-wider text-white/25">
+            <section>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-white/30">
                 Most Reported
-              </h2>
+              </p>
               <div className="flex flex-wrap gap-2">
                 {topCategories.map(([cat, count]) => (
                   <span
                     key={cat}
-                    className={`flex items-center gap-2 rounded-lg px-3 py-1 text-xs sm:text-[11px] font-medium ring-1 transition-all hover:scale-105 hover:ring-[#c8a96e]/50 cursor-default ${CATEGORY_TAILWIND[cat] ?? 'bg-white/5 text-white/60 ring-white/10'
-                      }`}
+                    className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold ring-1 ${
+                      CATEGORY_TAILWIND[cat] ??
+                      'bg-white/5 text-white/70 ring-white/10'
+                    }`}
                   >
-                    <span className="truncate max-w-22.5">
+                    <span>
                       {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}
                     </span>
-                    <span className="rounded-lg bg-black/20 px-1 py-px text-[10px] font-bold">
+                    <span className="rounded-lg bg-black/25 px-1.5 py-px text-[10px] font-bold">
                       {count}
                     </span>
                   </span>
@@ -215,59 +313,63 @@ export default function PropertyDetailPage() {
             </section>
           )}
 
-          {/* AI Summary */}
-          {summary ? (
-            <div className="rounded-2xl border border-[#c8a96e]/20 bg-[#c8a96e]/5 p-4 sm:p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={14} className="text-[#c8a96e]" />
-                <span className="text-[10px] sm:text-[9px] font-bold uppercase tracking-widest text-[#c8a96e]/70">
-                  AI Summary
-                </span>
+          <div className="rounded-3xl border border-white/10 bg-white/2 backdrop-blur-xl p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-linear-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20">
+                <Sparkles size={16} className="text-amber-400" />
               </div>
-              <p className="text-sm sm:text-[12px] text-white/60 leading-relaxed">{summary}</p>
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  AI Review Insights
+                </p>
+                <p className="text-xs uppercase tracking-wider text-amber-400/70">
+                  Live Summary
+                </p>
+              </div>
             </div>
-          ) : (
-            <button
-              onClick={loadSummary}
-              disabled={summaryLoading || reviews.length === 0}
-              className="group flex w-full items-center justify-between rounded-2xl border border-white/[0.07] bg-white/2.5 px-5 py-3 sm:py-2 text-sm sm:text-[12px] font-medium text-white/40 transition-all hover:border-[#c8a96e]/30 hover:bg-[#c8a96e]/[0.04] hover:text-[#c8a96e] disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <span className="flex items-center gap-2">
-                {summaryLoading ? (
-                  <span className="h-4 w-4 rounded-full border border-white/20 border-t-[#c8a96e] animate-spin" />
-                ) : (
-                  <Sparkles size={15} className="group-hover:text-[#c8a96e] transition-colors" />
-                )}
-                {summaryLoading ? 'Generating AI summary…' : 'Generate AI Summary'}
-              </span>
-              {!summaryLoading && (
-                <ChevronRight size={15} className="opacity-40 group-hover:opacity-70 transition-opacity" />
-              )}
-            </button>
-          )}
+
+            {summaryLoading ? (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-3 bg-white/5 rounded-full w-full" />
+                <div className="h-3 bg-white/5 rounded-full w-5/6" />
+                <div className="h-3 bg-white/5 rounded-full w-4/6" />
+                <div className="mt-4 flex items-center gap-2 text-xs text-white/40">
+                  <span className="h-4 w-4 rounded-full border-2 border-white/20 border-t-amber-400 animate-spin" />
+                  Generating insights...
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm leading-7 text-white/75">
+                {summary || 'No summary available.'}
+              </p>
+            )}
+          </div>
 
           <section className="space-y-4">
-            {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <h2 className="flex items-center gap-2 text-base sm:text-sm font-semibold text-white/80">
-                <MessageSquare size={15} className="text-white/30" /> Reviews
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-base font-black text-white">
+                <MessageSquare size={16} className="text-white/40" />
+                Tenant Reviews
               </h2>
 
-              {/* Tabs */}
-              <div className="flex gap-2 overflow-x-auto sm:overflow-x-visible py-1 sm:py-0">
+              <div className="flex gap-1.5 p-1 rounded-xl bg-white/5 border border-white/6 w-fit">
                 {tabs.map(({ key, label, count }) => (
                   <button
                     key={key}
                     onClick={() => setActiveTab(key)}
-                    className={`flex-shrink-0 flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs sm:text-[10px] font-medium transition-all whitespace-nowrap ${activeTab === key
-                        ? 'bg-white/8 text-white shadow-sm'
-                        : 'text-white/30 hover:text-white/55'
-                      }`}
+                    className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
+                      activeTab === key
+                        ? 'bg-white/10 text-white shadow-sm'
+                        : 'text-white/40 hover:text-white/70'
+                    }`}
                   >
                     {label}
                     <span
-                      className={`text-[10px] font-bold rounded-md px-1 py-px ${activeTab === key ? 'bg-white/10 text-white/70' : 'bg-white/5 text-white/25'
-                        }`}
+                      className={`text-[10px] font-bold rounded-md px-1.5 py-px ${
+                        activeTab === key
+                          ? 'bg-white/15 text-white/80'
+                          : 'bg-white/5 text-white/30'
+                      }`}
                     >
                       {count}
                     </span>
@@ -276,14 +378,22 @@ export default function PropertyDetailPage() {
               </div>
             </div>
 
-            {/* Reviews List */}
             {displayedReviews.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/5 bg-white/2 py-16 text-center px-4">
-                <span className="text-4xl opacity-15">💬</span>
-                <p className="text-xs text-white/20">No reviews in this category yet</p>
+              <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-white/6 bg-white/2 py-16 text-center px-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/8 flex items-center justify-center">
+                  <MessageSquare size={22} className="text-white/20" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-white/60 mb-1">
+                    No reviews yet
+                  </p>
+                  <p className="text-xs text-white/30">
+                    No reviews in this category.
+                  </p>
+                </div>
               </div>
             ) : (
-              <ul className="space-y-2.5">
+              <ul className="space-y-3">
                 {displayedReviews.map((r) => (
                   <li key={r.id}>
                     <ReviewCard review={r} />
@@ -293,72 +403,91 @@ export default function PropertyDetailPage() {
             )}
           </section>
 
-          {user && (
-            <Link
-              href={`/post-review?propertyId=${property.id}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#c8a96e] px-6 py-3 text-xs sm:text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#d4b87e] active:scale-[0.98]"
-            >
-              + Leave a Review
-            </Link>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <div className="overflow-hidden rounded-2xl ring-1 ring-white/[0.07]" style={{ height: '220px' }}>
-            <GoogleMap singleProperty={property} />
-          </div>
-
-          <div className="rounded-2xl border border-white/[0.07] bg-white/2.5 p-5 space-y-4">
-            <h3 className="text-[10px] sm:text-[9px] font-bold uppercase tracking-[0.2em] text-white/20">
-              Property Details
-            </h3>
-            <div className="space-y-3">
-              {[
-                { label: 'Listed by', value: property.user?.name || 'Unknown' },
-                { label: 'Coordinates', value: `${property.latitude.toFixed(4)}, ${property.longitude.toFixed(4)}` },
-                { label: 'Total Reviews', value: String(reviews.length) },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-start justify-between gap-4">
-                  <span className="text-[11px] sm:text-[10px] text-white/25 leading-snug">{label}</span>
-                  <span className="text-[11px] sm:text-[10px] font-semibold text-white/60 text-right leading-snug">{value}</span>
-                </div>
-              ))}
-            </div>
-
-            {reviews.length > 0 && (
-              <div className="pt-2 border-t border-white/6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[11px] sm:text-[10px] text-white/25">Satisfaction</span>
-                  <span className="text-[11px] sm:text-[10px] font-bold text-white/60">{scorePercent}%</span>
-                </div>
-                <div className="h-1.5 w-full rounded-full bg-white/6 overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${scorePercent}%`,
-                      backgroundColor:
-                        scorePercent >= 70 ? '#4ade80' : scorePercent >= 40 ? '#facc15' : '#f87171',
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
           {!user && (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/2.5 p-5 space-y-3">
-              <p className="text-xs sm:text-[10px] text-white/35 leading-relaxed">
-                Sign in to share your experience at this property.
-              </p>
+            <div className="rounded-2xl border border-white/8 bg-white/3 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold text-white mb-1">
+                  Have experience with this property?
+                </p>
+                <p className="text-xs text-white/50">
+                  Sign in to share your review and help other renters.
+                </p>
+              </div>
               <Link
                 href="/login"
-                className="flex w-full items-center justify-center rounded-xl bg-[#c8a96e] py-2.5 text-xs sm:text-[11px] font-bold uppercase tracking-widest text-black transition-all hover:bg-[#d4b87e]"
+                className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-bold text-black hover:bg-amber-400 active:scale-95 transition-all"
               >
                 Sign In
               </Link>
             </div>
           )}
+        </div>
+
+        <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <div
+            className="overflow-hidden rounded-2xl ring-1 ring-white/8 shadow-xl"
+            style={{ height: '220px' }}
+          >
+            <GoogleMap singleProperty={property} />
+          </div>
+
+          <div className="rounded-2xl border border-white/8 bg-white/3 p-5 space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white/30">
+              Property Details
+            </h3>
+            <div className="space-y-3.5">
+              {[
+                {
+                  label: 'Listed by',
+                  value: property.user?.name || 'Anonymous',
+                },
+                { label: 'Town', value: property.town || '—' },
+                { label: 'State', value: property.state },
+                {
+                  label: 'Coordinates',
+                  value: `${property.latitude.toFixed(4)}, ${property.longitude.toFixed(4)}`,
+                },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex items-start justify-between gap-3"
+                >
+                  <span className="text-xs text-white/40 font-medium leading-snug">
+                    {label}
+                  </span>
+                  <span className="text-xs font-semibold text-white/80 text-right leading-snug">
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {reviews.length > 0 && (
+              <div className="pt-3 border-t border-white/6 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-white/40 font-medium">
+                    Satisfaction Score
+                  </span>
+                  <span className={`text-sm font-black ${scoreColor}`}>
+                    {scorePercent}%
+                  </span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-white/8 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${scorePercent}%`,
+                      backgroundColor: scoreBarColor,
+                    }}
+                  />
+                </div>
+                <p className="text-[10px] text-white/30">
+                  Based on {reviews.length}{' '}
+                  {reviews.length === 1 ? 'review' : 'reviews'}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

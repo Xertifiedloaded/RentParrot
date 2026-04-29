@@ -15,7 +15,9 @@ export default function LayoutWrapper({
   return (
     <>
       {!hideNavbar && <Navbar />}
-      <main className={!hideNavbar ? 'min-h-[calc(100vh-64px)]' : 'min-h-screen'}>
+      <main
+        className={!hideNavbar ? 'min-h-[calc(100vh-64px)]' : 'min-h-screen'}
+      >
         {children}
       </main>
     </>

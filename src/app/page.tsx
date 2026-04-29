@@ -80,7 +80,11 @@ export default function HomePage() {
 
               <h1
                 className="mb-6 leading-none tracking-tight"
-                style={{ fontFamily: FONT_SERIF, fontSize: 'clamp(52px, 8vw, 96px)', fontStyle: 'italic' }}
+                style={{
+                  fontFamily: FONT_SERIF,
+                  fontSize: 'clamp(52px, 8vw, 96px)',
+                  fontStyle: 'italic',
+                }}
               >
                 Rent
                 <span
@@ -91,15 +95,20 @@ export default function HomePage() {
                 </span>
                 <span
                   className="block text-white/30"
-                  style={{ fontSize: 'clamp(22px, 3.5vw, 42px)', fontStyle: 'italic', lineHeight: 1.3 }}
+                  style={{
+                    fontSize: 'clamp(22px, 3.5vw, 42px)',
+                    fontStyle: 'italic',
+                    lineHeight: 1.3,
+                  }}
                 >
                   Know before you move.
                 </span>
               </h1>
 
               <p className="mb-10 max-w-md text-[15px] leading-[1.75] text-white/40">
-                Real reviews from verified tenants across Nigeria. Uncover hidden issues agents and
-                landlords won't tell you — before you sign the apartment.
+                Real reviews from verified tenants across Nigeria. Uncover
+                hidden issues agents and landlords won't tell you — before you
+                sign the apartment.
               </p>
 
               <div className="flex flex-wrap gap-3 mb-14">
@@ -107,7 +116,15 @@ export default function HomePage() {
                   href="/properties"
                   className="group flex items-center gap-2.5 rounded-2xl bg-amber-500 px-7 py-3.5 text-[13px] font-bold tracking-wide text-black transition-all duration-200 hover:bg-amber-400 active:scale-[0.98]"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  >
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.35-4.35" />
                   </svg>
@@ -117,7 +134,15 @@ export default function HomePage() {
                   href="/map"
                   className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/4 px-7 py-3.5 text-[13px] font-semibold text-white/50 transition-all duration-200 hover:border-white/20 hover:text-white/80"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  >
                     <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
                     <line x1="9" y1="3" x2="9" y2="18" />
                     <line x1="15" y1="6" x2="15" y2="21" />
@@ -136,8 +161,13 @@ export default function HomePage() {
                     key={label}
                     className="flex flex-col rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-4"
                   >
-                    <AnimatedCounter target={target} className="text-2xl font-black text-amber-400" />
-                    <span className="mt-0.5 text-[11px] text-white/30">{label}</span>
+                    <AnimatedCounter
+                      target={target}
+                      className="text-2xl font-black text-amber-400"
+                    />
+                    <span className="mt-0.5 text-[11px] text-white/30">
+                      {label}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -164,7 +194,6 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-
 
       <section className="w-full px-6 py-24 sm:px-12 lg:px-20 border-b border-white/6">
         <div className="mx-auto max-w-7xl">
@@ -198,7 +227,6 @@ export default function HomePage() {
             </div>
           </div>
 
-    
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -217,9 +245,13 @@ export default function HomePage() {
             // Empty state
             <div className="flex flex-col items-center justify-center rounded-3xl border border-white/[0.07] bg-white/[0.02] py-20 text-center">
               <span className="mb-4 text-4xl">🏠</span>
-              <p className="text-[15px] font-semibold text-white/40">No properties found</p>
+              <p className="text-[15px] font-semibold text-white/40">
+                No properties found
+              </p>
               <p className="mt-1 text-[13px] text-white/20">
-                {query ? `Try a different search term` : `No listings available yet in this area`}
+                {query
+                  ? `Try a different search term`
+                  : `No listings available yet in this area`}
               </p>
               {query && (
                 <button
@@ -246,10 +278,17 @@ export default function HomePage() {
             </p>
             <h2
               className="leading-[1.05] tracking-tight text-white/90"
-              style={{ fontFamily: FONT_SERIF, fontStyle: 'italic', fontSize: 'clamp(36px, 5vw, 64px)' }}
+              style={{
+                fontFamily: FONT_SERIF,
+                fontStyle: 'italic',
+                fontSize: 'clamp(36px, 5vw, 64px)',
+              }}
             >
               Everything tenants{' '}
-              <span className="text-white/30 not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
+              <span
+                className="text-white/30 not-italic"
+                style={{ fontFamily: FONT_SANS, fontWeight: 800 }}
+              >
                 wish they knew
               </span>
             </h2>
@@ -264,11 +303,23 @@ export default function HomePage() {
                 <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 ring-1 ring-amber-500/20">
                   <span className="text-lg">{f.icon}</span>
                 </div>
-                <h3 className="mb-2 text-[15px] font-bold text-white/80">{f.title}</h3>
-                <p className="text-[13px] leading-relaxed text-white/35">{f.desc}</p>
+                <h3 className="mb-2 text-[15px] font-bold text-white/80">
+                  {f.title}
+                </h3>
+                <p className="text-[13px] leading-relaxed text-white/35">
+                  {f.desc}
+                </p>
                 <div className="mt-5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-400/50 opacity-0 transition-all duration-200 group-hover:opacity-100">
                   View reports
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <svg
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                  >
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -290,10 +341,17 @@ export default function HomePage() {
             </p>
             <h2
               className="leading-[1.05] tracking-tight text-white/90"
-              style={{ fontFamily: FONT_SERIF, fontStyle: 'italic', fontSize: 'clamp(36px, 5vw, 64px)' }}
+              style={{
+                fontFamily: FONT_SERIF,
+                fontStyle: 'italic',
+                fontSize: 'clamp(36px, 5vw, 64px)',
+              }}
             >
               Three steps to{' '}
-              <span className="text-white/30 not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
+              <span
+                className="text-white/30 not-italic"
+                style={{ fontFamily: FONT_SANS, fontWeight: 800 }}
+              >
                 rent with confidence
               </span>
             </h2>
@@ -320,8 +378,12 @@ export default function HomePage() {
                 >
                   Step {s.n}
                 </p>
-                <h3 className="mb-3 text-[20px] font-bold text-white/85">{s.title}</h3>
-                <p className="text-[13px] leading-relaxed text-white/35">{s.desc}</p>
+                <h3 className="mb-3 text-[20px] font-bold text-white/85">
+                  {s.title}
+                </h3>
+                <p className="text-[13px] leading-relaxed text-white/35">
+                  {s.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -340,10 +402,17 @@ export default function HomePage() {
             </p>
             <h2
               className="leading-[1.05] tracking-tight text-white/90"
-              style={{ fontFamily: FONT_SERIF, fontStyle: 'italic', fontSize: 'clamp(36px, 5vw, 64px)' }}
+              style={{
+                fontFamily: FONT_SERIF,
+                fontStyle: 'italic',
+                fontSize: 'clamp(36px, 5vw, 64px)',
+              }}
             >
               What tenants{' '}
-              <span className="text-white/30 not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
+              <span
+                className="text-white/30 not-italic"
+                style={{ fontFamily: FONT_SANS, fontWeight: 800 }}
+              >
                 are saying
               </span>
             </h2>
@@ -362,17 +431,23 @@ export default function HomePage() {
                     {r.initials}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold text-white/75">{r.name}</p>
+                    <p className="truncate text-[13px] font-semibold text-white/75">
+                      {r.name}
+                    </p>
                     <p className="text-[11px] text-white/25">
                       {r.area} · {r.tenure}
                     </p>
                   </div>
                   <div className="ml-auto shrink-0 text-[13px] tracking-wide text-amber-400">
                     {'★'.repeat(r.stars)}
-                    <span className="text-white/10">{'★'.repeat(5 - r.stars)}</span>
+                    <span className="text-white/10">
+                      {'★'.repeat(5 - r.stars)}
+                    </span>
                   </div>
                 </div>
-                <p className="mb-5 text-[13px] leading-relaxed text-white/40">"{r.text}"</p>
+                <p className="mb-5 text-[13px] leading-relaxed text-white/40">
+                  "{r.text}"
+                </p>
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest ring-1 ${r.accent}`}
                 >
@@ -402,16 +477,24 @@ export default function HomePage() {
           </p>
           <h2
             className="mb-4 leading-none tracking-tight text-white/90"
-            style={{ fontFamily: FONT_SERIF, fontStyle: 'italic', fontSize: 'clamp(48px, 7vw, 88px)' }}
+            style={{
+              fontFamily: FONT_SERIF,
+              fontStyle: 'italic',
+              fontSize: 'clamp(48px, 7vw, 88px)',
+            }}
           >
             Know a property?
           </h2>
-          <p className="mb-4 text-[17px] text-white/30" style={{ fontFamily: FONT_SERIF, fontStyle: 'italic' }}>
+          <p
+            className="mb-4 text-[17px] text-white/30"
+            style={{ fontFamily: FONT_SERIF, fontStyle: 'italic' }}
+          >
             Help fellow renters avoid bad deals.
           </p>
           <p className="mx-auto mb-10 max-w-sm text-[13px] leading-relaxed text-white/25">
-            Your review can save someone from months of frustration. Join thousands of tenants making
-            smarter renting decisions across Nigeria.
+            Your review can save someone from months of frustration. Join
+            thousands of tenants making smarter renting decisions across
+            Nigeria.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link
@@ -419,7 +502,15 @@ export default function HomePage() {
               className="flex items-center gap-2.5 rounded-2xl bg-amber-500 px-8 py-4 text-[13px] font-bold tracking-wide text-black transition-all hover:bg-amber-400 active:scale-[0.98]"
             >
               Create Free Account
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
@@ -446,7 +537,9 @@ function PreviewCard() {
               ⚡
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-white/75">Power Supply</p>
+              <p className="text-[13px] font-semibold text-white/75">
+                Power Supply
+              </p>
               <p className="text-[11px] text-white/25">Lekki Phase 1</p>
             </div>
           </div>
@@ -456,10 +549,15 @@ function PreviewCard() {
         </div>
         <div className="mb-2 flex gap-1">
           {[1, 0.85, 0.9, 0.4, 0.3].map((h, i) => (
-            <div key={i} className={`h-1.5 flex-1 rounded-full ${h > 0.5 ? 'bg-amber-500' : 'bg-white/[0.07]'}`} />
+            <div
+              key={i}
+              className={`h-1.5 flex-1 rounded-full ${h > 0.5 ? 'bg-amber-500' : 'bg-white/[0.07]'}`}
+            />
           ))}
         </div>
-        <p className="text-[11px] text-white/20">18 hrs avg daily · 34 reviews</p>
+        <p className="text-[11px] text-white/20">
+          18 hrs avg daily · 34 reviews
+        </p>
       </div>
 
       <div className="rounded-3xl border border-white/8 bg-white/3 p-5">
@@ -468,14 +566,18 @@ function PreviewCard() {
             🤝
           </div>
           <div>
-            <p className="text-[13px] font-semibold text-white/75">Landlord Rating</p>
+            <p className="text-[13px] font-semibold text-white/75">
+              Landlord Rating
+            </p>
             <p className="text-[11px] text-white/25">Victoria Island</p>
           </div>
         </div>
         <p className="mb-1 text-[15px] text-amber-400 tracking-wide">
           ★★★★<span className="text-white/10">★</span>
         </p>
-        <p className="text-[11px] text-white/20">"Responds within 24 hrs" · 12 tenants</p>
+        <p className="text-[11px] text-white/20">
+          "Responds within 24 hrs" · 12 tenants
+        </p>
       </div>
 
       <div className="rounded-3xl border border-white/8 bg-white/3 p-5">
@@ -483,8 +585,8 @@ function PreviewCard() {
           Recent Review
         </p>
         <p className="mb-3 text-[12px] leading-relaxed text-white/40">
-          "Water supply is consistent, security is good, but the landlord takes weeks to fix
-          issues..."
+          "Water supply is consistent, security is good, but the landlord takes
+          weeks to fix issues..."
         </p>
         <div className="flex items-center justify-between">
           <span className="text-[11px] text-white/25">Surulere · 2 yrs</span>

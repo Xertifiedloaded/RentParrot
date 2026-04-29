@@ -124,9 +124,7 @@ export default function LoginPage() {
                 placeholder="Email Address"
                 className={inputClass}
                 value={form.email}
-                onChange={(e) =>
-                  setForm({ ...form, email: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
               />
 

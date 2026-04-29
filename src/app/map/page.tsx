@@ -33,9 +33,11 @@ function SidebarContent({
 }: SidebarContentProps) {
   return (
     <div className="flex flex-col h-full min-h-0">
-
       <div className="px-5 py-2 md:py-3 text-sm border-b border-white/5 shrink-0">
-        <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-3 group">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 sm:gap-3 group"
+        >
           <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-linear-to-br from-orange-500 to-red-500 shadow-md transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
             <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             <span className="absolute -top-1 -right-1 text-[8px] sm:text-[10px]">
@@ -84,7 +86,6 @@ function SidebarContent({
         </div>
       </div>
 
-
       <div className="flex-1 text-sm min-h-0 overflow-y-auto px-3 pb-4">
         {loading ? (
           <div className="flex justify-center py-10 text-white/40">
@@ -106,8 +107,9 @@ function SidebarContent({
                 <button
                   key={p.id}
                   onClick={() => handlePropertyClick(p)}
-                  className={`w-full rounded-2xl p-4 text-left transition ${isSelected ? 'bg-white/6' : 'hover:bg-white/3'
-                    }`}
+                  className={`w-full rounded-2xl p-4 text-left transition ${
+                    isSelected ? 'bg-white/6' : 'hover:bg-white/3'
+                  }`}
                 >
                   <div className="flex  justify-between items-start gap-3">
                     <div className="min-w-0">
@@ -126,7 +128,6 @@ function SidebarContent({
                         {buildLocationLine(p)}
                       </span>
                     )}
-
                   </div>
                 </button>
               );
@@ -153,14 +154,19 @@ function SidebarContent({
 export default function MapPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
-  const [nearbyProperties, setNearbyProperties] = useState<Property[] | null>(null);
+  const [nearbyProperties, setNearbyProperties] = useState<Property[] | null>(
+    null,
+  );
   const [selected, setSelected] = useState<Property | null>(null);
   const [focusedProperty, setFocusedProperty] = useState<Property | null>(null);
   const [search, setSearch] = useState('');
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [loading, setLoading] = useState(true);
   const [locationState, setLocationState] = useState<LocationState>('prompt');
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
@@ -267,18 +273,20 @@ export default function MapPage() {
       <div
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`fixed md:hidden inset-x-0 bottom-0 z-30 rounded-t-3xl bg-[#111214] border-t border-white/5 overflow-hidden transition-transform duration-300 ${mobileOpen
-          ? 'translate-y-0 h-[75vh]'
-          : 'translate-y-[calc(100%-80px)] h-[75vh]'
-          }`}
+        className={`fixed md:hidden inset-x-0 bottom-0 z-30 rounded-t-3xl bg-[#111214] border-t border-white/5 overflow-hidden transition-transform duration-300 ${
+          mobileOpen
+            ? 'translate-y-0 h-[75vh]'
+            : 'translate-y-[calc(100%-80px)] h-[75vh]'
+        }`}
       >
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="w-full flex justify-center"
         >
           <ChevronUp
-            className={`text-white/40 transition-transform ${mobileOpen ? 'rotate-180' : ''
-              }`}
+            className={`text-white/40 transition-transform ${
+              mobileOpen ? 'rotate-180' : ''
+            }`}
             size={20}
           />
         </button>
@@ -307,10 +315,11 @@ export default function MapPage() {
 
           <button
             onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`backdrop-blur-xl rounded-2xl px-4 py-2 text-xs border ${showHeatmap
-              ? 'bg-amber-500/20 border-amber-500/30 text-amber-300'
-              : 'bg-black/40 border-white/10 text-white/70'
-              }`}
+            className={`backdrop-blur-xl rounded-2xl px-4 py-2 text-xs border ${
+              showHeatmap
+                ? 'bg-amber-500/20 border-amber-500/30 text-amber-300'
+                : 'bg-black/40 border-white/10 text-white/70'
+            }`}
           >
             <Flame size={14} />
           </button>

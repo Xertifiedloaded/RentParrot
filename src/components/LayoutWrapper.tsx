@@ -3,11 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 
-export default function LayoutWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const hideNavbar = pathname === '/map';
@@ -15,11 +11,7 @@ export default function LayoutWrapper({
   return (
     <>
       {!hideNavbar && <Navbar />}
-      <main
-        className={!hideNavbar ? 'min-h-[calc(100vh-64px)]' : 'min-h-screen'}
-      >
-        {children}
-      </main>
+      <main className={!hideNavbar ? 'min-h-[calc(100vh-64px)]' : 'min-h-screen'}>{children}</main>
     </>
   );
 }

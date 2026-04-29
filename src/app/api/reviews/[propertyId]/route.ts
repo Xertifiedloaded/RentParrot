@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { propertyId: string } },
-) {
+export async function GET(_request: NextRequest, { params }: { params: { propertyId: string } }) {
   try {
     const reviews = await prisma.review.findMany({
       where: { propertyId: params.propertyId },
@@ -17,9 +14,6 @@ export async function GET(
     return NextResponse.json({ reviews });
   } catch (error) {
     console.error('Get reviews error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

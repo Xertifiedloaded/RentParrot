@@ -22,11 +22,7 @@ export const NEGATIVE_CATEGORIES: Category[] = [
   'POOR_NETWORK',
 ];
 
-export const POSITIVE_CATEGORIES: Category[] = [
-  'GOOD_ELECTRICITY',
-  'GOOD_WATER',
-  'GOOD_LANDLORD',
-];
+export const POSITIVE_CATEGORIES: Category[] = ['GOOD_ELECTRICITY', 'GOOD_WATER', 'GOOD_LANDLORD'];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   GOOD_ELECTRICITY: '✅ Good Electricity',
@@ -142,12 +138,7 @@ export const CATEGORY_TAILWIND: Record<string, string> = {
 };
 
 export type Tab = 'all' | 'positive' | 'negative';
-export type PermissionState =
-  | 'loading'
-  | 'prompt'
-  | 'granted'
-  | 'denied'
-  | 'unavailable';
+export type PermissionState = 'loading' | 'prompt' | 'granted' | 'denied' | 'unavailable';
 export interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;

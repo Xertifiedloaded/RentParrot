@@ -36,7 +36,6 @@ export async function GET() {
     });
 
     const heatmapPoints = negativeReviews.map((review) => {
-      // Sum weights for all negative categories on this review
       const weight = review.categories.reduce((total, cat) => {
         return total + (CATEGORY_WEIGHTS[cat] ?? 0);
       }, 0);
@@ -51,9 +50,6 @@ export async function GET() {
     return NextResponse.json({ points: heatmapPoints });
   } catch (error) {
     console.error('Heatmap error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

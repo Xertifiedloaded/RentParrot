@@ -5,13 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import ReviewCard from '@/components/ReviewCard';
-import {
-  Property,
-  NEGATIVE_CATEGORIES,
-  CATEGORY_LABELS,
-  CATEGORY_TAILWIND,
-  Tab,
-} from '@/types';
+import { Property, NEGATIVE_CATEGORIES, CATEGORY_LABELS, CATEGORY_TAILWIND, Tab } from '@/types';
 import { useAuth } from '@/components/AuthProvider';
 import {
   HomeIcon,
@@ -90,33 +84,21 @@ export default function PropertyDetailPage() {
             <div className="absolute inset-0 rounded-full border border-amber-400/20 animate-ping" />
             <div className="h-12 w-12 rounded-full border-2 border-white/10 border-t-amber-400 animate-spin" />
           </div>
-          <p className="text-xs tracking-[0.3em] uppercase text-white/30 font-medium">
-            Loading property
-          </p>
+          <p className="text-xs tracking-[0.3em] uppercase text-white/30 font-medium">Loading property</p>
         </div>
       </div>
     );
 
   if (!property)
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080a0f] text-white">
-        Property not found
-      </div>
+      <div className="flex min-h-screen items-center justify-center bg-[#080a0f] text-white">Property not found</div>
     );
 
-  const positiveReviews = reviews.filter(
-    (r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)),
-  );
+  const positiveReviews = reviews.filter((r) => !r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)));
 
-  const negativeReviews = reviews.filter((r) =>
-    r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)),
-  );
+  const negativeReviews = reviews.filter((r) => r.categories.some((c) => NEGATIVE_CATEGORIES.includes(c)));
   const displayedReviews =
-    activeTab === 'positive'
-      ? positiveReviews
-      : activeTab === 'negative'
-        ? negativeReviews
-        : reviews;
+    activeTab === 'positive' ? positiveReviews : activeTab === 'negative' ? negativeReviews : reviews;
 
   const categoryCounts: Record<string, number> = {};
   reviews.forEach((r) =>
@@ -134,10 +116,7 @@ export default function PropertyDetailPage() {
     { key: 'negative', label: 'Issues', count: negativeReviews.length },
   ];
 
-  const scorePercent =
-    reviews.length > 0
-      ? Math.round((positiveReviews.length / reviews.length) * 100)
-      : 0;
+  const scorePercent = reviews.length > 0 ? Math.round((positiveReviews.length / reviews.length) * 100) : 0;
 
   const scoreColor =
     reviews.length === 0
@@ -148,8 +127,7 @@ export default function PropertyDetailPage() {
           ? 'text-amber-400'
           : 'text-red-400';
 
-  const scoreBarColor =
-    scorePercent >= 70 ? '#4ade80' : scorePercent >= 40 ? '#facc15' : '#f87171';
+  const scoreBarColor = scorePercent >= 70 ? '#4ade80' : scorePercent >= 40 ? '#facc15' : '#f87171';
 
   return (
     <div className="min-h-screen bg-[#080a0f] text-white">
@@ -183,11 +161,7 @@ export default function PropertyDetailPage() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 sm:py-12">
           <div className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
             <div className="shrink-0 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-3xl border border-amber-500/20 bg-amber-500/10 shadow-lg shadow-amber-500/10">
-              <Building2
-                size={28}
-                className="text-amber-400 sm:w-8 sm:h-8"
-                strokeWidth={1.6}
-              />
+              <Building2 size={28} className="text-amber-400 sm:w-8 sm:h-8" strokeWidth={1.6} />
             </div>
 
             <div className="min-w-0 flex-1">
@@ -221,9 +195,7 @@ export default function PropertyDetailPage() {
               </div>
 
               {property.description && (
-                <p className="mt-5 max-w-2xl text-sm sm:text-base text-white/70 leading-7">
-                  {property.description}
-                </p>
+                <p className="mt-5 max-w-2xl text-sm sm:text-base text-white/70 leading-7">{property.description}</p>
               )}
             </div>
           </div>
@@ -274,11 +246,7 @@ export default function PropertyDetailPage() {
                   {icon}
                 </div>
 
-                <div
-                  className={`text-2xl sm:text-3xl font-black tracking-tight ${color}`}
-                >
-                  {value}
-                </div>
+                <div className={`text-2xl sm:text-3xl font-black tracking-tight ${color}`}>{value}</div>
               </div>
             ))}
           </div>
@@ -289,24 +257,17 @@ export default function PropertyDetailPage() {
         <div className="space-y-6">
           {topCategories.length > 0 && (
             <section>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-white/30">
-                Most Reported
-              </p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-white/30">Most Reported</p>
               <div className="flex flex-wrap gap-2">
                 {topCategories.map(([cat, count]) => (
                   <span
                     key={cat}
                     className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold ring-1 ${
-                      CATEGORY_TAILWIND[cat] ??
-                      'bg-white/5 text-white/70 ring-white/10'
+                      CATEGORY_TAILWIND[cat] ?? 'bg-white/5 text-white/70 ring-white/10'
                     }`}
                   >
-                    <span>
-                      {CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}
-                    </span>
-                    <span className="rounded-lg bg-black/25 px-1.5 py-px text-[10px] font-bold">
-                      {count}
-                    </span>
+                    <span>{CATEGORY_LABELS[cat as keyof typeof CATEGORY_LABELS]}</span>
+                    <span className="rounded-lg bg-black/25 px-1.5 py-px text-[10px] font-bold">{count}</span>
                   </span>
                 ))}
               </div>
@@ -319,12 +280,8 @@ export default function PropertyDetailPage() {
                 <Sparkles size={16} className="text-amber-400" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">
-                  AI Review Insights
-                </p>
-                <p className="text-xs uppercase tracking-wider text-amber-400/70">
-                  Live Summary
-                </p>
+                <p className="text-sm font-semibold text-white">AI Review Insights</p>
+                <p className="text-xs uppercase tracking-wider text-amber-400/70">Live Summary</p>
               </div>
             </div>
 
@@ -339,9 +296,7 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm leading-7 text-white/75">
-                {summary || 'No summary available.'}
-              </p>
+              <p className="text-sm leading-7 text-white/75">{summary || 'No summary available.'}</p>
             )}
           </div>
 
@@ -358,17 +313,13 @@ export default function PropertyDetailPage() {
                     key={key}
                     onClick={() => setActiveTab(key)}
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
-                      activeTab === key
-                        ? 'bg-white/10 text-white shadow-sm'
-                        : 'text-white/40 hover:text-white/70'
+                      activeTab === key ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'
                     }`}
                   >
                     {label}
                     <span
                       className={`text-[10px] font-bold rounded-md px-1.5 py-px ${
-                        activeTab === key
-                          ? 'bg-white/15 text-white/80'
-                          : 'bg-white/5 text-white/30'
+                        activeTab === key ? 'bg-white/15 text-white/80' : 'bg-white/5 text-white/30'
                       }`}
                     >
                       {count}
@@ -384,12 +335,8 @@ export default function PropertyDetailPage() {
                   <MessageSquare size={22} className="text-white/20" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white/60 mb-1">
-                    No reviews yet
-                  </p>
-                  <p className="text-xs text-white/30">
-                    No reviews in this category.
-                  </p>
+                  <p className="text-sm font-bold text-white/60 mb-1">No reviews yet</p>
+                  <p className="text-xs text-white/30">No reviews in this category.</p>
                 </div>
               </div>
             ) : (
@@ -406,12 +353,8 @@ export default function PropertyDetailPage() {
           {!user && (
             <div className="rounded-2xl border border-white/8 bg-white/3 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-white mb-1">
-                  Have experience with this property?
-                </p>
-                <p className="text-xs text-white/50">
-                  Sign in to share your review and help other renters.
-                </p>
+                <p className="text-sm font-bold text-white mb-1">Have experience with this property?</p>
+                <p className="text-xs text-white/50">Sign in to share your review and help other renters.</p>
               </div>
               <Link
                 href="/login"
@@ -424,17 +367,12 @@ export default function PropertyDetailPage() {
         </div>
 
         <div className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <div
-            className="overflow-hidden rounded-2xl ring-1 ring-white/8 shadow-xl"
-            style={{ height: '220px' }}
-          >
+          <div className="overflow-hidden rounded-2xl ring-1 ring-white/8 shadow-xl" style={{ height: '220px' }}>
             <GoogleMap singleProperty={property} />
           </div>
 
           <div className="rounded-2xl border border-white/8 bg-white/3 p-5 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-white/30">
-              Property Details
-            </h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-white/30">Property Details</h3>
             <div className="space-y-3.5">
               {[
                 {
@@ -448,16 +386,9 @@ export default function PropertyDetailPage() {
                   value: `${property.latitude.toFixed(4)}, ${property.longitude.toFixed(4)}`,
                 },
               ].map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="flex items-start justify-between gap-3"
-                >
-                  <span className="text-xs text-white/40 font-medium leading-snug">
-                    {label}
-                  </span>
-                  <span className="text-xs font-semibold text-white/80 text-right leading-snug">
-                    {value}
-                  </span>
+                <div key={label} className="flex items-start justify-between gap-3">
+                  <span className="text-xs text-white/40 font-medium leading-snug">{label}</span>
+                  <span className="text-xs font-semibold text-white/80 text-right leading-snug">{value}</span>
                 </div>
               ))}
             </div>
@@ -465,12 +396,8 @@ export default function PropertyDetailPage() {
             {reviews.length > 0 && (
               <div className="pt-3 border-t border-white/6 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-white/40 font-medium">
-                    Satisfaction Score
-                  </span>
-                  <span className={`text-sm font-black ${scoreColor}`}>
-                    {scorePercent}%
-                  </span>
+                  <span className="text-xs text-white/40 font-medium">Satisfaction Score</span>
+                  <span className={`text-sm font-black ${scoreColor}`}>{scorePercent}%</span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-white/8 overflow-hidden">
                   <div
@@ -482,8 +409,7 @@ export default function PropertyDetailPage() {
                   />
                 </div>
                 <p className="text-[10px] text-white/30">
-                  Based on {reviews.length}{' '}
-                  {reviews.length === 1 ? 'review' : 'reviews'}
+                  Based on {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
                 </p>
               </div>
             )}

@@ -198,3 +198,47 @@ export const LAGOS_HINTS = [
   { emoji: '🌇', label: 'Surulere', coords: '6.4983, 3.3563' },
   { emoji: '🏘️', label: 'Ikeja', coords: '6.5954, 3.3353' },
 ];
+
+export const NIGERIAN_STATE_COORDS: {
+  lat: number;
+  lng: number;
+  name: string;
+}[] = [
+  { lat: 6.5244, lng: 3.3792, name: 'Lagos' },
+  { lat: 7.1608, lng: 3.3473, name: 'Ogun' },
+  { lat: 7.8489, lng: 3.947, name: 'Oyo' },
+  { lat: 9.0765, lng: 7.3986, name: 'FCT' },
+  { lat: 4.8156, lng: 7.0498, name: 'Rivers' },
+  { lat: 12.0022, lng: 8.592, name: 'Kano' },
+  { lat: 10.5105, lng: 7.4165, name: 'Kaduna' },
+  { lat: 6.2104, lng: 6.9623, name: 'Anambra' },
+  { lat: 6.4584, lng: 7.5464, name: 'Enugu' },
+  { lat: 5.8904, lng: 5.68, name: 'Delta' },
+  { lat: 6.335, lng: 5.627, name: 'Edo' },
+  { lat: 7.25, lng: 5.195, name: 'Ondo' },
+  { lat: 7.719, lng: 5.311, name: 'Ekiti' },
+  { lat: 7.5629, lng: 4.52, name: 'Osun' },
+  { lat: 8.4966, lng: 4.5421, name: 'Kwara' },
+  { lat: 7.3369, lng: 8.74, name: 'Benue' },
+  { lat: 9.2182, lng: 9.5179, name: 'Plateau' },
+  { lat: 5.8702, lng: 8.5881, name: 'Cross River' },
+  { lat: 5.0077, lng: 7.8536, name: 'Akwa Ibom' },
+  { lat: 5.4895, lng: 7.0269, name: 'Imo' },
+  { lat: 5.4527, lng: 7.5248, name: 'Abia' },
+  { lat: 6.2649, lng: 8.0137, name: 'Ebonyi' },
+  { lat: 4.7719, lng: 6.0699, name: 'Bayelsa' },
+  { lat: 7.7337, lng: 6.6906, name: 'Kogi' },
+  { lat: 9.9309, lng: 5.5983, name: 'Niger' },
+  { lat: 8.5378, lng: 8.3206, name: 'Nasarawa' },
+  { lat: 7.9994, lng: 10.774, name: 'Taraba' },
+  { lat: 9.3265, lng: 12.3984, name: 'Adamawa' },
+  { lat: 10.2791, lng: 11.167, name: 'Gombe' },
+  { lat: 11.8333, lng: 13.15, name: 'Borno' },
+  { lat: 12.0, lng: 11.5, name: 'Yobe' },
+  { lat: 10.3158, lng: 9.8442, name: 'Bauchi' },
+  { lat: 12.228, lng: 9.5616, name: 'Jigawa' },
+  { lat: 12.9889, lng: 7.6006, name: 'Katsina' },
+  { lat: 12.4539, lng: 4.1975, name: 'Kebbi' },
+  { lat: 13.0059, lng: 5.2476, name: 'Sokoto' },
+  { lat: 12.1704, lng: 6.6624, name: 'Zamfara' },
+];

@@ -3,12 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Props } from '../types/index';
 
-export default function AnimatedCounter({
-  target,
-  suffix = '+',
-  duration = 1400,
-  className = '',
-}: Props) {
+export default function AnimatedCounter({ target, suffix = '+', duration = 1400, className = '' }: Props) {
   const [value, setValue] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const started = useRef(false);
@@ -42,10 +37,7 @@ export default function AnimatedCounter({
     return () => observer.disconnect();
   }, [target, duration]);
 
-  const display =
-    target >= 1000
-      ? `${(value / 1000).toFixed(value < target ? 1 : 0)}K`
-      : value.toLocaleString();
+  const display = target >= 1000 ? `${(value / 1000).toFixed(value < target ? 1 : 0)}K` : value.toLocaleString();
 
   return (
     <span ref={ref} className={className}>

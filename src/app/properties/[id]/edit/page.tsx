@@ -10,15 +10,7 @@ import { LAGOS_HINTS, NIGERIAN_STATES } from '@/lib';
 import { X, UploadCloud } from 'lucide-react';
 import { Property } from '@/types';
 
-function Field({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-[11px] font-semibold uppercase tracking-widest text-white/40">
@@ -88,14 +80,8 @@ export default function EditPropertyPage() {
       .finally(() => setPageLoading(false));
   }, [id]);
 
-  const set =
-    (key: string) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) =>
-      setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -125,13 +111,7 @@ export default function EditPropertyPage() {
     }
     setGeocoding(true);
     try {
-      const parts = [
-        form.address,
-        form.community,
-        form.town,
-        `${form.state} State`,
-        'Nigeria',
-      ]
+      const parts = [form.address, form.community, form.town, `${form.state} State`, 'Nigeria']
         .filter(Boolean)
         .join(', ');
       const res = await fetch(
@@ -164,9 +144,7 @@ export default function EditPropertyPage() {
       return;
     }
     if (!form.latitude || !form.longitude) {
-      setError(
-        "Please add coordinates. Click 'Get Coordinates' or enter manually.",
-      );
+      setError("Please add coordinates. Click 'Get Coordinates' or enter manually.");
       return;
     }
     setSubmitting(true);
@@ -205,10 +183,7 @@ export default function EditPropertyPage() {
         <div className="flex flex-col items-center gap-4 text-center">
           <div className="text-5xl opacity-20">🔒</div>
           <p className="text-base font-semibold text-white/50">Access denied</p>
-          <Link
-            href="/properties"
-            className="text-sm text-amber-400 hover:text-amber-300"
-          >
+          <Link href="/properties" className="text-sm text-amber-400 hover:text-amber-300">
             ← Back to Properties
           </Link>
         </div>
@@ -228,9 +203,7 @@ export default function EditPropertyPage() {
           >
             ← Property
           </Link>
-          <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">
-            Edit Listing
-          </p>
+          <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">Edit Listing</p>
           <h1 className="text-2xl font-bold text-white/90">Edit Property</h1>
         </div>
       </div>
@@ -249,27 +222,16 @@ export default function EditPropertyPage() {
         >
           {/* Identity */}
           <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Property Identity
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">Property Identity</p>
             <Field label="Property Name" required>
-              <input
-                type="text"
-                value={form.name}
-                onChange={set('name')}
-                required
-                className={inputCls}
-              />
+              <input type="text" value={form.name} onChange={set('name')} required className={inputCls} />
             </Field>
           </div>
 
           {/* Photo */}
           <div className="px-6 py-5 space-y-4">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Photo{' '}
-              <span className="normal-case font-normal text-white/20">
-                (optional)
-              </span>
+              Photo <span className="normal-case font-normal text-white/20">(optional)</span>
             </p>
 
             {displayImage ? (
@@ -277,12 +239,7 @@ export default function EditPropertyPage() {
                 className="relative w-full rounded-xl overflow-hidden ring-1 ring-white/[0.08]"
                 style={{ aspectRatio: '16/9' }}
               >
-                <Image
-                  src={displayImage}
-                  alt="Property"
-                  fill
-                  className="object-cover"
-                />
+                <Image src={displayImage} alt="Property" fill className="object-cover" />
                 <div className="absolute top-2 right-2 flex gap-2">
                   <button
                     type="button"
@@ -309,12 +266,8 @@ export default function EditPropertyPage() {
                 className="flex w-full flex-col items-center gap-2 rounded-xl border border-dashed border-white/[0.12] py-8 text-center transition-all hover:border-amber-500/40 hover:bg-white/[0.02]"
               >
                 <UploadCloud size={24} className="text-white/20" />
-                <span className="text-xs text-white/30">
-                  Click to upload a photo
-                </span>
-                <span className="text-[11px] text-white/15">
-                  JPG, PNG, WEBP · max 5 MB
-                </span>
+                <span className="text-xs text-white/30">Click to upload a photo</span>
+                <span className="text-[11px] text-white/15">JPG, PNG, WEBP · max 5 MB</span>
               </button>
             )}
 
@@ -329,28 +282,15 @@ export default function EditPropertyPage() {
 
           {/* Location */}
           <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Location
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">Location</p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="sm:col-span-2">
                 <Field label="Street Address" required>
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={set('address')}
-                    required
-                    className={inputCls}
-                  />
+                  <input type="text" value={form.address} onChange={set('address')} required className={inputCls} />
                 </Field>
               </div>
               <Field label="State" required>
-                <select
-                  value={form.state}
-                  onChange={set('state')}
-                  required
-                  className={inputCls}
-                >
+                <select value={form.state} onChange={set('state')} required className={inputCls}>
                   {NIGERIAN_STATES.map((s) => (
                     <option key={s} value={s} className="bg-[#0e1117]">
                       {s}
@@ -362,49 +302,26 @@ export default function EditPropertyPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Town / Area" required>
-                <input
-                  type="text"
-                  value={form.town}
-                  onChange={set('town')}
-                  required
-                  className={inputCls}
-                />
+                <input type="text" value={form.town} onChange={set('town')} required className={inputCls} />
               </Field>
               <Field label="Community / Estate">
-                <input
-                  type="text"
-                  value={form.community}
-                  onChange={set('community')}
-                  className={inputCls}
-                />
+                <input type="text" value={form.community} onChange={set('community')} className={inputCls} />
               </Field>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Field label="Nearest Bus Stop / Landmark">
-                <input
-                  type="text"
-                  value={form.nearestBusStop}
-                  onChange={set('nearestBusStop')}
-                  className={inputCls}
-                />
+                <input type="text" value={form.nearestBusStop} onChange={set('nearestBusStop')} className={inputCls} />
               </Field>
               <Field label="Postal Code">
-                <input
-                  type="text"
-                  value={form.postalCode}
-                  onChange={set('postalCode')}
-                  className={inputCls}
-                />
+                <input type="text" value={form.postalCode} onChange={set('postalCode')} className={inputCls} />
               </Field>
             </div>
           </div>
 
           {/* Coordinates */}
           <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Coordinates
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">Coordinates</p>
 
             <button
               type="button"
@@ -449,8 +366,7 @@ export default function EditPropertyPage() {
               <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3.5 py-2 ring-1 ring-emerald-500/20">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-xs font-semibold text-emerald-300">
-                  {parseFloat(form.latitude).toFixed(4)},{' '}
-                  {parseFloat(form.longitude).toFixed(4)}
+                  {parseFloat(form.latitude).toFixed(4)}, {parseFloat(form.longitude).toFixed(4)}
                 </span>
               </div>
             )}
@@ -458,9 +374,7 @@ export default function EditPropertyPage() {
 
           {/* Description */}
           <div className="px-6 py-5 space-y-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">
-              Description
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/20">Description</p>
             <Field label="About this property">
               <textarea
                 value={form.description}
@@ -503,10 +417,7 @@ export default function EditPropertyPage() {
           </p>
           <ul className="space-y-2">
             {LAGOS_HINTS.map(({ emoji, label, coords }) => (
-              <li
-                key={label}
-                className="flex items-center justify-between gap-4"
-              >
+              <li key={label} className="flex items-center justify-between gap-4">
                 <span className="text-xs text-white/40">
                   {emoji} {label}
                 </span>

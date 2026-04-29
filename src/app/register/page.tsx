@@ -30,9 +30,7 @@ function getStrength(pw: string): {
   ];
 
   const lvl = levels[Math.min(score, 5)];
-  const bars = Array.from({ length: 5 }, (_, i) =>
-    i < score ? lvl.color : 'bg-white/10',
-  );
+  const bars = Array.from({ length: 5 }, (_, i) => (i < score ? lvl.color : 'bg-white/10'));
 
   return { score, label: lvl.label, color: lvl.text, bars };
 }
@@ -96,15 +94,10 @@ export default function RegisterPage() {
             Join the <br />
             <span className="text-amber-400">Community</span>
           </h1>
-          <p className="mt-3 text-xs sm:text-sm text-white/35">
-            Help renters make smarter decisions across Lagos.
-          </p>
+          <p className="mt-3 text-xs sm:text-sm text-white/35">Help renters make smarter decisions across Lagos.</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-3xl border border-white/10 bg-white/4 p-6 backdrop-blur-xl"
-        >
+        <form onSubmit={handleSubmit} className="rounded-3xl border border-white/10 bg-white/4 p-6 backdrop-blur-xl">
           {error && (
             <div className="mb-5 rounded-2xl bg-red-500/10 px-4 py-3 text-sm text-red-400 border border-red-500/20">
               {error}

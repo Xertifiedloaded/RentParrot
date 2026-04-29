@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AuthUser, AuthContextType } from '../types/index';
 
 const AuthContext = createContext<AuthContextType | null>(null);

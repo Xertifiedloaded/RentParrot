@@ -8,10 +8,7 @@ cloudinary.config({
 
 export default cloudinary;
 
-export async function uploadImage(
-  file: Buffer,
-  filename: string,
-): Promise<{ url: string; publicId: string }> {
+export async function uploadImage(file: Buffer, filename: string): Promise<{ url: string; publicId: string }> {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder: 'chat_messages', resource_type: 'image' },

@@ -16,10 +16,7 @@ export default function PropertyCard({ property }: { property: Property }) {
       href={`/properties/${property.id}`}
       className="group relative flex flex-col bg-[#0d0f13] border border-white/[0.07] rounded-2xl overflow-hidden transition-all duration-300 hover:border-amber-500/25 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/40"
     >
-      <div
-        className="relative w-full overflow-hidden bg-[#111318]"
-        style={{ aspectRatio: '4/3' }}
-      >
+      <div className="relative w-full overflow-hidden bg-[#111318]" style={{ aspectRatio: '4/3' }}>
         {imageUrl ? (
           <>
             <Image
@@ -65,10 +62,7 @@ export default function PropertyCard({ property }: { property: Property }) {
 
         <div className="absolute top-3 right-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/60" />
-          <span
-            className="text-[9px] font-bold tracking-[0.12em] text-white/40"
-            style={{ fontFamily: FONT_MONO }}
-          >
+          <span className="text-[9px] font-bold tracking-[0.12em] text-white/40" style={{ fontFamily: FONT_MONO }}>
             {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
           </span>
         </div>
@@ -94,9 +88,7 @@ export default function PropertyCard({ property }: { property: Property }) {
         </div>
 
         {property.description && (
-          <p className="text-[11px] text-white/25 leading-relaxed line-clamp-2 flex-1">
-            {property.description}
-          </p>
+          <p className="text-[11px] text-white/25 leading-relaxed line-clamp-2 flex-1">{property.description}</p>
         )}
 
         <div className="flex items-center justify-between pt-2.5 border-t border-white/5">
@@ -106,18 +98,14 @@ export default function PropertyCard({ property }: { property: Property }) {
                 key={s}
                 size={9}
                 className={
-                  s <= Math.min(Math.ceil(reviewCount / 3), 5) &&
-                  reviewCount > 0
+                  s <= Math.min(Math.ceil(reviewCount / 3), 5) && reviewCount > 0
                     ? 'text-amber-400 fill-amber-400'
                     : 'text-white/[0.08]'
                 }
               />
             ))}
           </div>
-          <span
-            className="text-[10px] text-white/20"
-            style={{ fontFamily: FONT_MONO }}
-          >
+          <span className="text-[10px] text-white/20" style={{ fontFamily: FONT_MONO }}>
             {formatDistanceToNow(new Date(property.createdAt), {
               addSuffix: true,
             })}

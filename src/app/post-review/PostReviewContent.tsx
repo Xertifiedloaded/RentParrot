@@ -33,9 +33,7 @@ export default function PostReviewContent() {
 
   const [propertyInput, setPropertyInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
-    null,
-  );
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -104,9 +102,7 @@ export default function PostReviewContent() {
   const toggleCategory = (key: Category) => {
     setForm((prev) => ({
       ...prev,
-      categories: prev.categories.includes(key)
-        ? prev.categories.filter((c) => c !== key)
-        : [...prev.categories, key],
+      categories: prev.categories.includes(key) ? prev.categories.filter((c) => c !== key) : [...prev.categories, key],
     }));
   };
 
@@ -115,9 +111,7 @@ export default function PostReviewContent() {
     setError('');
 
     if (!form.propertyId || !form.comment || form.categories.length === 0) {
-      setError(
-        'Please select a property, at least one category, and write a comment.',
-      );
+      setError('Please select a property, at least one category, and write a comment.');
       return;
     }
 
@@ -162,15 +156,9 @@ export default function PostReviewContent() {
       <div className="min-h-screen flex items-center justify-center bg-[#080a0f] px-4">
         <div className="w-full max-w-sm text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-500/10 border border-amber-500/20">
-            <MessageSquare
-              size={32}
-              className="text-amber-400"
-              strokeWidth={1.5}
-            />
+            <MessageSquare size={32} className="text-amber-400" strokeWidth={1.5} />
           </div>
-          <h2 className="text-xl font-black text-white mb-2">
-            Sign in to review
-          </h2>
+          <h2 className="text-xl font-black text-white mb-2">Sign in to review</h2>
           <p className="text-sm text-white/50 mb-8 leading-relaxed">
             You need an account to share your experience and help other renters.
           </p>
@@ -180,10 +168,7 @@ export default function PostReviewContent() {
           >
             Sign In
           </Link>
-          <Link
-            href="/properties"
-            className="mt-4 block text-sm text-white/40 hover:text-white/70 transition-colors"
-          >
+          <Link href="/properties" className="mt-4 block text-sm text-white/40 hover:text-white/70 transition-colors">
             Browse properties instead
           </Link>
         </div>
@@ -196,18 +181,10 @@ export default function PostReviewContent() {
       <div className="min-h-screen flex items-center justify-center bg-[#080a0f] px-4">
         <div className="text-center">
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 border border-emerald-500/20">
-            <CheckCircle2
-              size={36}
-              className="text-emerald-400"
-              strokeWidth={1.5}
-            />
+            <CheckCircle2 size={36} className="text-emerald-400" strokeWidth={1.5} />
           </div>
-          <h2 className="text-2xl font-black text-white mb-2">
-            Review submitted!
-          </h2>
-          <p className="text-sm text-white/50">
-            Redirecting to the property page…
-          </p>
+          <h2 className="text-2xl font-black text-white mb-2">Review submitted!</h2>
+          <p className="text-sm text-white/50">Redirecting to the property page…</p>
         </div>
       </div>
     );
@@ -229,9 +206,7 @@ export default function PostReviewContent() {
             <ArrowLeft size={15} />
             <span>Back</span>
           </button>
-          <span className="text-xs font-bold uppercase tracking-widest text-white/30">
-            Write Review
-          </span>
+          <span className="text-xs font-bold uppercase tracking-widest text-white/30">Write Review</span>
           <div className="w-16" />
         </div>
       </div>
@@ -241,16 +216,13 @@ export default function PostReviewContent() {
         <div className="mb-8 sm:mb-10">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1">
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">
-              Tenant Review
-            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400">Tenant Review</span>
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight">
             Share Your <span className="text-amber-400">Experience</span>
           </h1>
           <p className="mt-2 text-sm text-white/50 max-w-md leading-relaxed">
-            Your honest review helps other renters make better decisions. Be
-            specific and factual.
+            Your honest review helps other renters make better decisions. Be specific and factual.
           </p>
         </div>
 
@@ -272,18 +244,14 @@ export default function PostReviewContent() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">Select Property</p>
-                <p className="text-xs text-white/40">
-                  Search by name, address or area
-                </p>
+                <p className="text-xs text-white/40">Search by name, address or area</p>
               </div>
             </div>
 
             <div className="relative">
               <div
                 className={`flex items-center gap-2 rounded-xl border px-3 sm:px-4 transition-all ${
-                  showSuggestions
-                    ? 'border-amber-500/40 ring-2 ring-amber-500/10'
-                    : 'border-white/10'
+                  showSuggestions ? 'border-amber-500/40 ring-2 ring-amber-500/10' : 'border-white/10'
                 } bg-white/5`}
               >
                 <Search
@@ -322,12 +290,8 @@ export default function PostReviewContent() {
                 >
                   {filteredProperties.length === 0 ? (
                     <div className="px-4 py-5 text-center">
-                      <p className="text-sm text-white/40 font-medium">
-                        No properties found
-                      </p>
-                      <p className="text-xs text-white/25 mt-1">
-                        Try a different search term
-                      </p>
+                      <p className="text-sm text-white/40 font-medium">No properties found</p>
+                      <p className="text-xs text-white/25 mt-1">Try a different search term</p>
                     </div>
                   ) : (
                     <ul className="max-h-60 overflow-y-auto divide-y divide-white/4">
@@ -339,15 +303,10 @@ export default function PostReviewContent() {
                             className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/5 transition-colors"
                           >
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/15">
-                              <Building2
-                                size={13}
-                                className="text-amber-400/70"
-                              />
+                              <Building2 size={13} className="text-amber-400/70" />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-white truncate">
-                                {p.name}
-                              </p>
+                              <p className="text-sm font-semibold text-white truncate">{p.name}</p>
                               <p className="text-xs text-white/40 truncate">
                                 {p.address}
                                 {p.town ? `, ${p.town}` : ''}
@@ -366,15 +325,10 @@ export default function PostReviewContent() {
               <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-4 py-3">
                 <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate">
-                    {selectedProperty.name}
-                  </p>
+                  <p className="text-sm font-semibold text-white truncate">{selectedProperty.name}</p>
                   <p className="text-xs text-white/50 truncate">
                     {selectedProperty.address}
-                    {selectedProperty.town
-                      ? `, ${selectedProperty.town}`
-                      : ''}{' '}
-                    · {selectedProperty.state}
+                    {selectedProperty.town ? `, ${selectedProperty.town}` : ''} · {selectedProperty.state}
                   </p>
                 </div>
                 <button
@@ -408,9 +362,7 @@ export default function PostReviewContent() {
             <div className="space-y-2.5">
               <div className="flex items-center gap-2">
                 <ThumbsUp size={12} className="text-emerald-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-emerald-400/80">
-                  Positives
-                </span>
+                <span className="text-xs font-bold uppercase tracking-widest text-emerald-400/80">Positives</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {positive.map(([key, label]) => {
@@ -428,18 +380,11 @@ export default function PostReviewContent() {
                     >
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                          active
-                            ? 'border-emerald-400 bg-emerald-400'
-                            : 'border-white/25'
+                          active ? 'border-emerald-400 bg-emerald-400' : 'border-white/25'
                         }`}
                       >
                         {active && (
-                          <svg
-                            width="9"
-                            height="7"
-                            viewBox="0 0 9 7"
-                            fill="none"
-                          >
+                          <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
                             <path
                               d="M1 3.5L3.2 5.5L8 1"
                               stroke="black"
@@ -461,9 +406,7 @@ export default function PostReviewContent() {
             <div className="space-y-2.5 pt-1">
               <div className="flex items-center gap-2">
                 <ThumbsDown size={12} className="text-red-400" />
-                <span className="text-xs font-bold uppercase tracking-widest text-red-400/80">
-                  Issues / Concerns
-                </span>
+                <span className="text-xs font-bold uppercase tracking-widest text-red-400/80">Issues / Concerns</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {negative.map(([key, label]) => {
@@ -481,18 +424,11 @@ export default function PostReviewContent() {
                     >
                       <span
                         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                          active
-                            ? 'border-red-400 bg-red-400'
-                            : 'border-white/25'
+                          active ? 'border-red-400 bg-red-400' : 'border-white/25'
                         }`}
                       >
                         {active && (
-                          <svg
-                            width="9"
-                            height="7"
-                            viewBox="0 0 9 7"
-                            fill="none"
-                          >
+                          <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
                             <path
                               d="M1 3.5L3.2 5.5L8 1"
                               stroke="black"
@@ -510,7 +446,6 @@ export default function PostReviewContent() {
               </div>
             </div>
           </div>
-
 
           <div className="rounded-2xl border border-white/8 bg-white/2 p-4 sm:p-6 space-y-4">
             <div className="flex items-center gap-3">
@@ -534,23 +469,18 @@ export default function PostReviewContent() {
               <div className="absolute bottom-3 right-3">
                 <span
                   className={`text-[10px] font-semibold transition-colors ${
-                    charCount >= minChars
-                      ? 'text-emerald-400/60'
-                      : 'text-white/25'
+                    charCount >= minChars ? 'text-emerald-400/60' : 'text-white/25'
                   }`}
                 >
-                  {charCount < minChars
-                    ? `${minChars - charCount} more needed`
-                    : `${charCount} chars ✓`}
+                  {charCount < minChars ? `${minChars - charCount} more needed` : `${charCount} chars ✓`}
                 </span>
               </div>
             </div>
 
             <div className="rounded-xl border border-white/6 bg-white/2 px-3 sm:px-4 py-3">
               <p className="text-xs text-white/35 leading-relaxed">
-                <span className="font-semibold text-white/50">Tip:</span> Focus
-                on facts — electricity, water, landlord behaviour, road access,
-                security. Your review is anonymous to landlords.
+                <span className="font-semibold text-white/50">Tip:</span> Focus on facts — electricity, water, landlord
+                behaviour, road access, security. Your review is anonymous to landlords.
               </p>
             </div>
           </div>

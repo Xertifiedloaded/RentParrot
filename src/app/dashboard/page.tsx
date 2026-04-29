@@ -7,35 +7,16 @@ import { useAuth } from '@/components/AuthProvider';
 import { Property, Review, CATEGORY_LABELS, CATEGORY_COLORS } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 import toast from 'react-hot-toast';
-import {
-  Building2,
-  MessageSquare,
-  Calendar,
-  Plus,
-  MapIcon,
-  MapPin,
-} from 'lucide-react';
+import { Building2, MessageSquare, Calendar, Plus, MapIcon, MapPin } from 'lucide-react';
 
-function StatCard({
-  icon,
-  value,
-  label,
-}: {
-  icon: React.ReactNode;
-  value: React.ReactNode;
-  label: string;
-}) {
+function StatCard({ icon, value, label }: { icon: React.ReactNode; value: React.ReactNode; label: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 hover:bg-white/10 transition">
       <div className="flex items-center gap-4">
-        <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">
-          {icon}
-        </div>
+        <div className="rounded-xl bg-orange-500/10 p-3 text-orange-400">{icon}</div>
         <div>
           <p className="text-2xl font-bold text-white">{value}</p>
-          <p className="text-xs uppercase tracking-widest text-white/40">
-            {label}
-          </p>
+          <p className="text-xs uppercase tracking-widest text-white/40">{label}</p>
         </div>
       </div>
     </div>
@@ -75,9 +56,7 @@ export default function DashboardPage() {
   const [myProperties, setMyProperties] = useState<Property[]>([]);
   const [myReviews, setMyReviews] = useState<Review[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'properties' | 'reviews'>(
-    'properties',
-  );
+  const [activeTab, setActiveTab] = useState<'properties' | 'reviews'>('properties');
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
@@ -90,9 +69,7 @@ export default function DashboardPage() {
       fetch('/api/properties').then((r) => r.json()),
       fetch(`/api/reviews?userId=${user.id}`).then((r) => r.json()),
     ]).then(([propData, revData]) => {
-      const filtered = (propData.properties || []).filter(
-        (p: Property) => p.user?.id === user.id,
-      );
+      const filtered = (propData.properties || []).filter((p: Property) => p.user?.id === user.id);
       setMyProperties(filtered);
       setMyReviews(revData.reviews || []);
       setDataLoading(false);
@@ -124,10 +101,7 @@ export default function DashboardPage() {
     );
   }
 
-  const memberSince = formatDistanceToNow(
-    new Date((user as any).createdAt || Date.now()),
-    { addSuffix: true },
-  );
+  const memberSince = formatDistanceToNow(new Date((user as any).createdAt || Date.now()), { addSuffix: true });
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -135,9 +109,7 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/40">
-              Dashboard
-            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-white/40">Dashboard</p>
             <h1 className="text-2xl md:text-4xl font-bold">
               Welcome back, <span className="text-orange-500">{user.name}</span>
             </h1>
@@ -151,16 +123,8 @@ export default function DashboardPage() {
       <main className="mx-auto max-w-7xl px-5 py-8">
         {/* Stats */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <StatCard
-            icon={<Building2 size={20} />}
-            value={dataLoading ? '–' : myProperties.length}
-            label="Properties"
-          />
-          <StatCard
-            icon={<MessageSquare size={20} />}
-            value={dataLoading ? '–' : myReviews.length}
-            label="Reviews"
-          />
+          <StatCard icon={<Building2 size={20} />} value={dataLoading ? '–' : myProperties.length} label="Properties" />
+          <StatCard icon={<MessageSquare size={20} />} value={dataLoading ? '–' : myReviews.length} label="Reviews" />
           <StatCard
             icon={<Calendar size={20} />}
             value={<span className="text-base">{memberSince}</span>}
@@ -197,17 +161,14 @@ export default function DashboardPage() {
         {/* Tabs */}
         <div className="mt-8 inline-flex rounded-xl border border-white/10 bg-white/5 p-1">
           {(['properties', 'reviews'] as const).map((tab) => {
-            const count =
-              tab === 'properties' ? myProperties.length : myReviews.length;
+            const count = tab === 'properties' ? myProperties.length : myReviews.length;
 
             return (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`rounded-lg px-5 py-2 text-sm font-medium transition ${
-                  activeTab === tab
-                    ? 'bg-orange-500 text-white'
-                    : 'text-white/50 hover:text-white'
+                  activeTab === tab ? 'bg-orange-500 text-white' : 'text-white/50 hover:text-white'
                 }`}
               >
                 {tab} ({count})
@@ -309,9 +270,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
 
-                  <p className="mt-4 text-sm text-white/70 leading-relaxed">
-                    {r.comment}
-                  </p>
+                  <p className="mt-4 text-sm text-white/70 leading-relaxed">{r.comment}</p>
 
                   {r.property && (
                     <Link

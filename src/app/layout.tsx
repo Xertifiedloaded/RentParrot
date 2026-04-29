@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/components/AuthProvider';
 import './globals.css';
 import LayoutWrapper from '@/components/LayoutWrapper';
+import { LocationPermission } from '@/components/location-permission';
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
@@ -15,8 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: 'RentParrot🦜 – Nigerian Tenant Insight Platform',
-    description:
-      'Make informed rental decisions in Nigeria with real tenant reviews.',
+    description: 'Make informed rental decisions in Nigeria with real tenant reviews.',
     icons: {
       icon: '/icon.png',
       shortcut: '/icon.png',
@@ -24,8 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       title: 'RentParrot🦜 – Nigerian Tenant Insight Platform',
-      description:
-        'Make informed rental decisions in Nigeria with real tenant reviews.',
+      description: 'Make informed rental decisions in Nigeria with real tenant reviews.',
       url: currentUrl,
       siteName: 'RentParrot🦜',
       images: [
@@ -42,8 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: 'RentParrot🦜 – Nigerian Tenant Insight Platform',
-      description:
-        'Make informed rental decisions in Nigeria with real tenant reviews.',
+      description: 'Make informed rental decisions in Nigeria with real tenant reviews.',
       images: [`${currentUrl}/icon.png`],
     },
   };
@@ -56,11 +54,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
@@ -68,6 +62,7 @@ export default function RootLayout({
           <LayoutWrapper>{children}</LayoutWrapper>
           <Toaster />
         </AuthProvider>
+        {/* <LocationPermission /> */}
       </body>
     </html>
   );

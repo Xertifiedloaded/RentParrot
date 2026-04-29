@@ -23,10 +23,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ reviews });
   } catch (error) {
     console.error('Get reviews error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -54,10 +51,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!property) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
     const review = await prisma.review.create({
@@ -75,9 +69,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ review }, { status: 201 });
   } catch (error) {
     console.error('Create review error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

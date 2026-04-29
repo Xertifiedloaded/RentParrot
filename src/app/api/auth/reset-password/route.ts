@@ -51,10 +51,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Reset password error:', error);
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -63,17 +60,11 @@ export async function PUT(request: NextRequest) {
     const { token, password } = await request.json();
 
     if (!token || !password) {
-      return NextResponse.json(
-        { error: 'Token and password are required' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Token and password are required' }, { status: 400 });
     }
 
     if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
     }
 
     const user = await prisma.user.findFirst({
@@ -86,10 +77,7 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Reset link is invalid or has expired' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Reset link is invalid or has expired' }, { status: 400 });
     }
 
     const bcrypt = await import('bcryptjs');
@@ -110,22 +98,11 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Confirm reset error:', error);
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-async function sendResetEmail({
-  to,
-  name,
-  resetUrl,
-}: {
-  to: string;
-  name: string;
-  resetUrl: string;
-}) {
+async function sendResetEmail({ to, name, resetUrl }: { to: string; name: string; resetUrl: string }) {
   const transporter = nodemailer.createTransport(smtpConfig);
 
   await transporter.sendMail({

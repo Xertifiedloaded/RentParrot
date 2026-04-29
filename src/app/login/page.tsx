@@ -75,9 +75,7 @@ export default function LoginPage() {
                 Welcome <span></span>
                 <span className="text-amber-400">Back</span>
               </h1>
-              <p className="mt-3 text-xs sm:text-sm text-white/35">
-                Sign in to access your tenant insights.
-              </p>
+              <p className="mt-3 text-xs sm:text-sm text-white/35">Sign in to access your tenant insights.</p>
             </>
           )}
 
@@ -87,9 +85,7 @@ export default function LoginPage() {
                 Reset <span></span>
                 <span className="text-amber-400">Password</span>
               </h1>
-              <p className="mt-3 text-xs sm:text-sm text-white/35">
-                We’ll send a reset link to your email.
-              </p>
+              <p className="mt-3 text-xs sm:text-sm text-white/35">We’ll send a reset link to your email.</p>
             </>
           )}
 
@@ -99,9 +95,7 @@ export default function LoginPage() {
                 Check your <br />
                 <span className="text-amber-400">Inbox</span>
               </h1>
-              <p className="mt-3 text-xs sm:text-sm text-white/35">
-                Reset link sent if that email exists.
-              </p>
+              <p className="mt-3 text-xs sm:text-sm text-white/35">Reset link sent if that email exists.</p>
             </>
           )}
         </div>
@@ -149,9 +143,7 @@ export default function LoginPage() {
                     placeholder="Password"
                     className={`${inputClass} pr-16`}
                     value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
                     required
                   />
 
@@ -178,10 +170,7 @@ export default function LoginPage() {
 
         {/* FORGOT */}
         {view === 'forgot' && (
-          <form
-            onSubmit={handleReset}
-            className="rounded-3xl border border-white/10 bg-white/4 p-6 backdrop-blur-xl"
-          >
+          <form onSubmit={handleReset} className="rounded-3xl border border-white/10 bg-white/4 p-6 backdrop-blur-xl">
             {error && (
               <div className="mb-5 rounded-2xl bg-red-500/10 px-4 py-3 text-sm text-red-400 border border-red-500/20">
                 {error}
@@ -227,13 +216,10 @@ export default function LoginPage() {
               ✉️
             </div>
 
-            <p className="mb-2 text-sm font-semibold text-white">
-              Reset link sent!
-            </p>
+            <p className="mb-2 text-sm font-semibold text-white">Reset link sent!</p>
 
             <p className="mb-5 text-xs text-white/35 leading-relaxed">
-              If <span className="text-white/60">{resetEmail}</span> exists,
-              you’ll receive a reset link shortly.
+              If <span className="text-white/60">{resetEmail}</span> exists, you’ll receive a reset link shortly.
             </p>
 
             <button

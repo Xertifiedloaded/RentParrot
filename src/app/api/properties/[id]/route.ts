@@ -4,10 +4,7 @@ import { getAuthUser } from '@/lib/auth';
 import { uploadImage } from '@/lib/cloudinary';
 import { v2 as cloudinary } from 'cloudinary';
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const property = await prisma.property.findUnique({
       where: { id: params.id },
@@ -21,26 +18,17 @@ export async function GET(
     });
 
     if (!property) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
     return NextResponse.json({ property });
   } catch (error) {
     console.error('Get property error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthUser();
 
@@ -53,10 +41,7 @@ export async function PATCH(
     });
 
     if (!existing) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
     if (existing.userId !== authUser.userId) {
@@ -138,17 +123,11 @@ export async function PATCH(
     return NextResponse.json({ property: updated });
   } catch (error) {
     console.error('Patch property error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthUser();
 
@@ -161,10 +140,7 @@ export async function DELETE(
     });
 
     if (!property) {
-      return NextResponse.json(
-        { error: 'Property not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Property not found' }, { status: 404 });
     }
 
     if (property.userId !== authUser.userId) {
@@ -189,9 +165,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Delete property error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

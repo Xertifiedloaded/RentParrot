@@ -12,11 +12,7 @@ const NEGATIVE_CATEGORIES = new Set<Category>([
   Category.POOR_NETWORK,
 ]);
 
-const POSITIVE_CATEGORIES = new Set<Category>([
-  Category.GOOD_ELECTRICITY,
-  Category.GOOD_WATER,
-  Category.GOOD_LANDLORD,
-]);
+const POSITIVE_CATEGORIES = new Set<Category>([Category.GOOD_ELECTRICITY, Category.GOOD_WATER, Category.GOOD_LANDLORD]);
 
 const CATEGORY_LABELS: Record<Category, string> = {
   GOOD_ELECTRICITY: 'stable electricity',
@@ -32,10 +28,7 @@ const CATEGORY_LABELS: Record<Category, string> = {
   OTHER: 'other concerns',
 };
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { propertyId: string } },
-) {
+export async function GET(_request: NextRequest, { params }: { params: { propertyId: string } }) {
   try {
     const reviews = await prisma.review.findMany({
       where: { propertyId: params.propertyId },
@@ -44,8 +37,7 @@ export async function GET(
 
     if (reviews.length === 0) {
       return NextResponse.json({
-        summary:
-          'No reviews yet. Be the first to share your experience with this property.',
+        summary: 'No reviews yet. Be the first to share your experience with this property.',
       });
     }
 
@@ -72,17 +64,13 @@ export async function GET(
 
     let recommendation: string;
     if (negativeScore === 0 && positiveScore > 0) {
-      recommendation =
-        'Tenants are largely satisfied — this property is worth considering.';
+      recommendation = 'Tenants are largely satisfied — this property is worth considering.';
     } else if (positiveRatio >= 0.65) {
-      recommendation =
-        'Despite some concerns, this property is generally well regarded.';
+      recommendation = 'Despite some concerns, this property is generally well regarded.';
     } else if (positiveRatio >= 0.35) {
-      recommendation =
-        'This property has mixed reviews — visit and inspect carefully before committing.';
+      recommendation = 'This property has mixed reviews — visit and inspect carefully before committing.';
     } else {
-      recommendation =
-        'Most tenants report significant issues. Approach with caution or you can avoid this Apartment.';
+      recommendation = 'Most tenants report significant issues. Approach with caution or you can avoid this Apartment.';
     }
 
     const positives = [...positiveSeen].slice(0, 3).join(', ');
@@ -104,8 +92,7 @@ export async function GET(
   } catch (error) {
     console.error('Review summary error:', error);
     return NextResponse.json({
-      summary:
-        'Summary could not be generated at this time. Please check the reviews manually.',
+      summary: 'Summary could not be generated at this time. Please check the reviews manually.',
     });
   }
 }

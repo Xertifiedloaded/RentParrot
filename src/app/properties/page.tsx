@@ -6,51 +6,14 @@ import PropertyCard from '@/components/PropertyCard';
 import { Property } from '@/types';
 import { useUserLocation } from '@/hooks/useUserLocation';
 import { MapPin, Search, X, Plus } from 'lucide-react';
+import { useProperties } from '@/hooks/useProperties';
 
 const FONT_MONO = "'Instrument Mono', 'JetBrains Mono', monospace";
 
 export default function PropertiesPage() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
-
-  const { status, detectedState, clearLocation } = useUserLocation();
-
-  const fetchProperties = useCallback(
-    async (stateFilter?: string) => {
-      setLoading(true);
-      try {
-        let url = '/api/properties';
-
-        if (query) {
-          url += `?search=${encodeURIComponent(query)}`;
-        } else if (stateFilter) {
-          url += `?state=${encodeURIComponent(stateFilter)}`;
-        }
-
-        const res = await fetch(url);
-        const data = await res.json();
-        setProperties(data.properties || []);
-      } catch {
-        setProperties([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [query],
-  );
-
-  useEffect(() => {
-    if (status === 'idle') return;
-
-    if (query) {
-      fetchProperties();
-    } else {
-      fetchProperties(detectedState || undefined);
-    }
-  }, [fetchProperties, query, detectedState, status]);
+  const { properties, loading, search, status, detectedState, clearLocation } = useProperties(query);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +30,6 @@ export default function PropertiesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden">
-      {/* Background Glow */}
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.08),transparent_35%)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
@@ -78,9 +40,7 @@ export default function PropertiesPage() {
               className="text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-amber-400/60 font-semibold"
               style={{ fontFamily: FONT_MONO }}
             >
-              {detectedState && !query
-                ? `${detectedState} State`
-                : 'All Nigeria'}
+              {detectedState && !query ? `${detectedState} State` : 'All Nigeria'}
             </p>
 
             <h1 className="mt-1 text-xl sm:text-3xl font-black tracking-tight wrap-break-word">
@@ -119,9 +79,7 @@ export default function PropertiesPage() {
         <form onSubmit={handleSearch} className="mb-5">
           <div
             className={`flex items-center gap-2 rounded-2xl border bg-white/5 px-3 sm:px-4 transition-all ${
-              focused
-                ? 'border-amber-400/40 ring-2 ring-amber-400/20'
-                : 'border-white/10'
+              focused ? 'border-amber-400/40 ring-2 ring-amber-400/20' : 'border-white/10'
             }`}
           >
             <Search size={14} className="text-white/30 shrink-0" />
@@ -137,11 +95,7 @@ export default function PropertiesPage() {
             />
 
             {search && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="rounded-lg p-1 text-white/30 hover:text-white"
-              >
+              <button type="button" onClick={clearSearch} className="rounded-lg p-1 text-white/30 hover:text-white">
                 <X size={14} />
               </button>
             )}
@@ -194,18 +148,13 @@ export default function PropertiesPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-[220px] rounded-2xl bg-white/5 animate-pulse"
-              />
+              <div key={i} className="h-[220px] rounded-2xl bg-white/5 animate-pulse" />
             ))}
           </div>
         ) : isEmpty ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-6 py-16 text-center">
             <div className="text-4xl">🏠</div>
-            <h3 className="mt-4 text-sm sm:text-lg font-semibold text-white/80">
-              No properties found
-            </h3>
+            <h3 className="mt-4 text-sm sm:text-lg font-semibold text-white/80">No properties found</h3>
             <p className="mt-2 max-w-xs text-xs sm:text-sm text-white/40">
               {query
                 ? 'Try another search term.'
@@ -235,10 +184,7 @@ export default function PropertiesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {properties.map((p) => (
-              <div
-                key={p.id}
-                className="transition-transform hover:scale-[1.02]"
-              >
+              <div key={p.id} className="transition-transform hover:scale-[1.02]">
                 <PropertyCard property={p} />
               </div>
             ))}

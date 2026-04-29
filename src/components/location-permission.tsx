@@ -7,10 +7,8 @@ import { PermissionState } from '../types/index';
 
 export function LocationPermission() {
   const { detectedState } = useUserLocation();
-  const [permissionState, setPermissionState] =
-    useState<PermissionState>('loading');
-  const [isSystemLocationDisabled, setIsSystemLocationDisabled] =
-    useState(false);
+  const [permissionState, setPermissionState] = useState<PermissionState>('loading');
+  const [isSystemLocationDisabled, setIsSystemLocationDisabled] = useState(false);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -20,13 +18,10 @@ export function LocationPermission() {
     }
 
     if (navigator.permissions) {
-      navigator.permissions
-        .query({ name: 'geolocation' })
-        .then((permResult) => {
-          setPermissionState(permResult.state as PermissionState);
-          permResult.onchange = () =>
-            setPermissionState(permResult.state as PermissionState);
-        });
+      navigator.permissions.query({ name: 'geolocation' }).then((permResult) => {
+        setPermissionState(permResult.state as PermissionState);
+        permResult.onchange = () => setPermissionState(permResult.state as PermissionState);
+      });
     } else {
       navigator.geolocation.getCurrentPosition(
         () => setPermissionState('granted'),
@@ -79,18 +74,14 @@ export function LocationPermission() {
       border: 'border-emerald-500/20',
       icon: <CheckCircle className="h-4 w-4 text-emerald-400" />,
       text: 'text-emerald-300',
-      label: detectedState
-        ? `Location granted · ${detectedState}`
-        : 'Location access granted',
+      label: detectedState ? `Location granted · ${detectedState}` : 'Location access granted',
     },
     denied: {
       bg: 'bg-red-500/10',
       border: 'border-red-500/20',
       icon: <AlertCircle className="h-4 w-4 text-red-400" />,
       text: 'text-red-300',
-      label: isSystemLocationDisabled
-        ? 'Location is disabled on your device.'
-        : 'Location permission was denied.',
+      label: isSystemLocationDisabled ? 'Location is disabled on your device.' : 'Location permission was denied.',
     },
     unavailable: {
       bg: 'bg-gray-500/10',
@@ -112,13 +103,9 @@ export function LocationPermission() {
 
   return (
     <div className="space-y-3">
-      <div
-        className={`flex items-start gap-3 rounded-xl border p-3.5 ${current.bg} ${current.border}`}
-      >
+      <div className={`flex items-start gap-3 rounded-xl border p-3.5 ${current.bg} ${current.border}`}>
         <div className="mt-0.5 shrink-0">{current.icon}</div>
-        <p className={`text-[13px] font-medium leading-snug ${current.text}`}>
-          {current.label}
-        </p>
+        <p className={`text-[13px] font-medium leading-snug ${current.text}`}>{current.label}</p>
       </div>
 
       {(permissionState === 'prompt' || permissionState === 'denied') && (
@@ -139,7 +126,7 @@ export function LocationPermission() {
             </button>
           )}
           {permissionState === 'prompt' && (
-            <button className="flex-1 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150">
+            <button className="flex-1 rounded-xl border border-white/10 bg-white/4 hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150">
               Browse All
             </button>
           )}
@@ -149,7 +136,7 @@ export function LocationPermission() {
       {isSystemLocationDisabled && permissionState === 'denied' && (
         <button
           onClick={handleOpenLocationSettings}
-          className="w-full rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150"
+          className="w-full rounded-xl border border-white/10 bg-white/4 hover:bg-white/[0.07] px-4 py-2.5 text-xs font-semibold text-white/50 hover:text-white/70 transition-all duration-150"
         >
           View Device Settings
         </button>

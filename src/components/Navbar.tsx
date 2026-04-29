@@ -38,24 +38,17 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-2 sm:gap-3 group"
-        >
+        <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-3 group">
           <div className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-2xl bg-linear-to-br from-orange-500 to-red-500 shadow-md transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
             <HomeIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            <span className="absolute -top-1 -right-1 text-[8px] sm:text-[10px]">
-              🦜
-            </span>
+            <span className="absolute -top-1 -right-1 text-[8px] sm:text-[10px]">🦜</span>
           </div>
 
           <div className="flex flex-col leading-tight">
             <span className="text-sm sm:text-lg lg:text-xl font-extrabold tracking-tight text-white">
               Rent<span className="text-orange-500">Parrot</span>
             </span>
-            <span className="text-[9px] sm:text-[10px] lg:text-xs text-gray-400 font-medium">
-              Hear before you rent
-            </span>
+            <span className="text-[9px] sm:text-[10px] lg:text-xs text-gray-400 font-medium">Hear before you rent</span>
           </div>
         </Link>
 
@@ -67,9 +60,7 @@ export default function Navbar() {
                 key={l.href}
                 href={l.href}
                 className={`rounded-full px-4 py-2 text-xs lg:text-sm font-medium transition-all ${
-                  active
-                    ? 'bg-white text-black shadow'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  active ? 'bg-white text-black shadow' : 'text-gray-300 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 {l.label}
@@ -86,9 +77,7 @@ export default function Navbar() {
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-sm font-bold text-white">
                   {initials}
                 </div>
-                <span className="text-xs lg:text-sm font-medium text-white">
-                  {firstName}
-                </span>
+                <span className="text-xs lg:text-sm font-medium text-white">{firstName}</span>
               </div>
 
               <button
@@ -120,11 +109,7 @@ export default function Navbar() {
           onClick={() => setOpen(!open)}
           className="lg:hidden rounded-lg p-2 text-white hover:bg-white/10 transition"
         >
-          {open ? (
-            <X className="h-5 w-5 sm:h-6 sm:w-6" />
-          ) : (
-            <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-          )}
+          {open ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <Menu className="h-5 w-5 sm:h-6 sm:w-6" />}
         </button>
       </div>
 
@@ -138,9 +123,7 @@ export default function Navbar() {
                 href={l.href}
                 onClick={() => setOpen(false)}
                 className={`block rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                  active
-                    ? 'bg-orange-500 text-white'
-                    : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                  active ? 'bg-orange-500 text-white' : 'text-gray-300 hover:bg-white/10 hover:text-white'
                 }`}
               >
                 {l.label}
@@ -152,8 +135,7 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="px-2 text-xs text-gray-400">
-                  Signed in as{' '}
-                  <span className="font-semibold text-white">{firstName}</span>
+                  Signed in as <span className="font-semibold text-white">{firstName}</span>
                 </div>
                 <button
                   onClick={() => {

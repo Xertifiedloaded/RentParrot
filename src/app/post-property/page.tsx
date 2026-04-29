@@ -7,24 +7,9 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import { LAGOS_HINTS, NIGERIAN_STATES } from '@/lib';
-import {
-  X,
-  UploadCloud,
-  MapPin,
-  Home,
-  FileText,
-  Navigation,
-} from 'lucide-react';
+import { X, UploadCloud, MapPin, Home, FileText, Navigation } from 'lucide-react';
 
-function Field({
-  label,
-  required,
-  children,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-}) {
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <label className="flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400">
@@ -36,24 +21,12 @@ function Field({
   );
 }
 
-function Section({
-  icon,
-  title,
-  children,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
-}) {
+function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-white/5 bg-white/[0.03] backdrop-blur-xl">
       <div className="flex items-center gap-3 border-b border-white/5 px-5 py-4">
-        <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400">
-          {icon}
-        </div>
-        <h2 className="text-sm sm:text-base font-semibold text-white">
-          {title}
-        </h2>
+        <div className="rounded-xl bg-amber-500/10 p-2 text-amber-400">{icon}</div>
+        <h2 className="text-sm sm:text-base font-semibold text-white">{title}</h2>
       </div>
       <div className="space-y-5 p-5">{children}</div>
     </section>
@@ -87,14 +60,8 @@ export default function PostPropertyPage() {
   const [geocoding, setGeocoding] = useState(false);
   const [error, setError] = useState('');
 
-  const set =
-    (key: string) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) =>
-      setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -129,13 +96,7 @@ export default function PostPropertyPage() {
     setGeocoding(true);
 
     try {
-      const parts = [
-        form.address,
-        form.community,
-        form.town,
-        `${form.state} State`,
-        'Nigeria',
-      ]
+      const parts = [form.address, form.community, form.town, `${form.state} State`, 'Nigeria']
         .filter(Boolean)
         .join(', ');
 
@@ -217,10 +178,7 @@ export default function PostPropertyPage() {
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black px-6">
-        <Link
-          href="/login"
-          className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-semibold text-black"
-        >
+        <Link href="/login" className="rounded-xl bg-amber-400 px-6 py-3 text-sm font-semibold text-black">
           Sign In
         </Link>
       </div>
@@ -231,13 +189,9 @@ export default function PostPropertyPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-400">
-            New Listing
-          </p>
+          <p className="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-amber-400">New Listing</p>
           <h1 className="mt-2 text-2xl sm:text-3xl font-bold">Post Property</h1>
-          <p className="mt-2 text-sm sm:text-base text-zinc-400">
-            Add a property and collect tenant insights.
-          </p>
+          <p className="mt-2 text-sm sm:text-base text-zinc-400">Add a property and collect tenant insights.</p>
         </div>
 
         {error && (
@@ -249,24 +203,14 @@ export default function PostPropertyPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <Section icon={<Home size={18} />} title="Property Details">
             <Field label="Property Name" required>
-              <input
-                value={form.name}
-                onChange={set('name')}
-                className={inputCls}
-                placeholder="Sunshine Apartments"
-              />
+              <input value={form.name} onChange={set('name')} className={inputCls} placeholder="Sunshine Apartments" />
             </Field>
           </Section>
 
           <Section icon={<UploadCloud size={18} />} title="Property Photo">
             {imagePreview ? (
               <div className="relative aspect-video overflow-hidden rounded-2xl">
-                <Image
-                  src={imagePreview}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                />
+                <Image src={imagePreview} alt="Preview" fill className="object-cover" />
                 <button
                   type="button"
                   onClick={removeImage}
@@ -282,9 +226,7 @@ export default function PostPropertyPage() {
                 className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-zinc-700 py-10 hover:border-amber-400"
               >
                 <UploadCloud size={26} />
-                <span className="text-xs sm:text-sm text-zinc-400">
-                  Upload property image
-                </span>
+                <span className="text-xs sm:text-sm text-zinc-400">Upload property image</span>
               </button>
             )}
 
@@ -300,19 +242,11 @@ export default function PostPropertyPage() {
           <Section icon={<MapPin size={18} />} title="Location">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Street Address" required>
-                <input
-                  value={form.address}
-                  onChange={set('address')}
-                  className={inputCls}
-                />
+                <input value={form.address} onChange={set('address')} className={inputCls} />
               </Field>
 
               <Field label="State">
-                <select
-                  value={form.state}
-                  onChange={set('state')}
-                  className={inputCls}
-                >
+                <select value={form.state} onChange={set('state')} className={inputCls}>
                   {NIGERIAN_STATES.map((s) => (
                     <option key={s} value={s}>
                       {s}
@@ -322,19 +256,11 @@ export default function PostPropertyPage() {
               </Field>
 
               <Field label="Town / Area" required>
-                <input
-                  value={form.town}
-                  onChange={set('town')}
-                  className={inputCls}
-                />
+                <input value={form.town} onChange={set('town')} className={inputCls} />
               </Field>
 
               <Field label="Community">
-                <input
-                  value={form.community}
-                  onChange={set('community')}
-                  className={inputCls}
-                />
+                <input value={form.community} onChange={set('community')} className={inputCls} />
               </Field>
             </div>
           </Section>
@@ -350,18 +276,8 @@ export default function PostPropertyPage() {
             </button>
 
             <div className="grid grid-cols-2 gap-4">
-              <input
-                value={form.latitude}
-                onChange={set('latitude')}
-                className={inputCls}
-                placeholder="Latitude"
-              />
-              <input
-                value={form.longitude}
-                onChange={set('longitude')}
-                className={inputCls}
-                placeholder="Longitude"
-              />
+              <input value={form.latitude} onChange={set('latitude')} className={inputCls} placeholder="Latitude" />
+              <input value={form.longitude} onChange={set('longitude')} className={inputCls} placeholder="Longitude" />
             </div>
           </Section>
 

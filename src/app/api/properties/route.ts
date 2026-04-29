@@ -87,10 +87,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ properties });
   } catch (error) {
     console.error('Get properties error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -120,30 +117,11 @@ export async function POST(request: NextRequest) {
       fields = await request.json();
     }
 
-    const {
-      name,
-      address,
-      town,
-      community,
-      nearestBusStop,
-      postalCode,
-      state,
-      latitude,
-      longitude,
-      description,
-    } = fields;
+    const { name, address, town, community, nearestBusStop, postalCode, state, latitude, longitude, description } =
+      fields;
 
-    if (
-      !name ||
-      !address ||
-      !town ||
-      latitude === undefined ||
-      longitude === undefined
-    ) {
-      return NextResponse.json(
-        { error: 'Name, address, town, latitude, and longitude are required' },
-        { status: 400 },
-      );
+    if (!name || !address || !town || latitude === undefined || longitude === undefined) {
+      return NextResponse.json({ error: 'Name, address, town, latitude, and longitude are required' }, { status: 400 });
     }
 
     let imageUrl: string | null = null;
@@ -182,9 +160,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ property }, { status: 201 });
   } catch (error) {
     console.error('Create property error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

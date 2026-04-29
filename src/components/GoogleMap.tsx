@@ -25,9 +25,7 @@ export default function GoogleMap({
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
-  const heatmapRef = useRef<google.maps.visualization.HeatmapLayer | null>(
-    null,
-  );
+  const heatmapRef = useRef<google.maps.visualization.HeatmapLayer | null>(null);
   const userMarkerRef = useRef<google.maps.Marker | null>(null);
   const clickMarkerRef = useRef<google.maps.Circle | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
@@ -40,12 +38,9 @@ export default function GoogleMap({
     onMapClickRef.current = onMapClick;
   }, [onMapClick]);
 
-  const stableOnMapClick = useCallback(
-    (lat: number, lng: number, state?: string) => {
-      onMapClickRef.current?.(lat, lng, state);
-    },
-    [],
-  );
+  const stableOnMapClick = useCallback((lat: number, lng: number, state?: string) => {
+    onMapClickRef.current?.(lat, lng, state);
+  }, []);
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -69,9 +64,7 @@ export default function GoogleMap({
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
 
-    const mapCenter = singleProperty
-      ? { lat: singleProperty.latitude, lng: singleProperty.longitude }
-      : center;
+    const mapCenter = singleProperty ? { lat: singleProperty.latitude, lng: singleProperty.longitude } : center;
 
     mapInstanceRef.current = new google.maps.Map(mapRef.current, {
       center: mapCenter,
@@ -166,39 +159,36 @@ export default function GoogleMap({
     infoWindowRef.current = new google.maps.InfoWindow();
 
     if (onMapClick) {
-      mapInstanceRef.current.addListener(
-        'click',
-        (e: google.maps.MapMouseEvent) => {
-          if (!e.latLng) return;
-          const lat = e.latLng.lat();
-          const lng = e.latLng.lng();
+      mapInstanceRef.current.addListener('click', (e: google.maps.MapMouseEvent) => {
+        if (!e.latLng) return;
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
 
-          if (clickMarkerRef.current) clickMarkerRef.current.setMap(null);
+        if (clickMarkerRef.current) clickMarkerRef.current.setMap(null);
 
-          clickMarkerRef.current = new google.maps.Circle({
-            center: { lat, lng },
-            radius: 2000,
-            map: mapInstanceRef.current!,
-            fillColor: '#f59e0b',
-            fillOpacity: 0.07,
-            strokeColor: '#f59e0b',
-            strokeOpacity: 0.3,
-            strokeWeight: 1.5,
-          });
+        clickMarkerRef.current = new google.maps.Circle({
+          center: { lat, lng },
+          radius: 2000,
+          map: mapInstanceRef.current!,
+          fillColor: '#f59e0b',
+          fillOpacity: 0.07,
+          strokeColor: '#f59e0b',
+          strokeOpacity: 0.3,
+          strokeWeight: 1.5,
+        });
 
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-            let detectedState: string | undefined;
-            if (status === 'OK' && results?.length) {
-              const stateComp = results[0].address_components.find((c) =>
-                c.types.includes('administrative_area_level_1'),
-              );
-              detectedState = stateComp?.long_name;
-            }
-            stableOnMapClick(lat, lng, detectedState);
-          });
-        },
-      );
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          let detectedState: string | undefined;
+          if (status === 'OK' && results?.length) {
+            const stateComp = results[0].address_components.find((c) =>
+              c.types.includes('administrative_area_level_1'),
+            );
+            detectedState = stateComp?.long_name;
+          }
+          stableOnMapClick(lat, lng, detectedState);
+        });
+      });
     }
   }, [loaded, center, zoom, singleProperty, stableOnMapClick, onMapClick]);
 
@@ -305,12 +295,10 @@ export default function GoogleMap({
       .then((r) => r.json())
       .then(({ points }) => {
         if (heatmapRef.current) heatmapRef.current.setMap(null);
-        const heatmapData = points.map(
-          (p: { lat: number; lng: number; weight: number }) => ({
-            location: new google.maps.LatLng(p.lat, p.lng),
-            weight: p.weight,
-          }),
-        );
+        const heatmapData = points.map((p: { lat: number; lng: number; weight: number }) => ({
+          location: new google.maps.LatLng(p.lat, p.lng),
+          weight: p.weight,
+        }));
         heatmapRef.current = new google.maps.visualization.HeatmapLayer({
           data: heatmapData,
           map: mapInstanceRef.current!,
@@ -323,9 +311,7 @@ export default function GoogleMap({
       <div className="flex h-full w-full items-center justify-center bg-[#111111]">
         <div className="text-center">
           <div className="mb-2 text-3xl">🗺️</div>
-          <p className="text-sm font-medium text-gray-400">
-            Google Maps API key required
-          </p>
+          <p className="text-sm font-medium text-gray-400">Google Maps API key required</p>
         </div>
       </div>
     );

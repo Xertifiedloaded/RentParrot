@@ -15,6 +15,7 @@ const FONT_MONO = "'Instrument Mono', 'JetBrains Mono', monospace";
 
 export default function HomePage() {
   const [query, setQuery] = useState('');
+  // @ts-ignore
   const { properties: featuredProperties, loading, status, detectedState, clearLocation } = useProperties(query);
 
   return (

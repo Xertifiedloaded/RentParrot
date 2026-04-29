@@ -13,14 +13,16 @@ const FONT_MONO = "'Instrument Mono', 'JetBrains Mono', monospace";
 export default function PropertiesPage() {
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
-  const { properties, loading, search, status, detectedState, clearLocation } = useProperties(query);
+  const [search, setSearch] = useState('')
 
+  const { properties, loading, status, detectedState, clearLocation } = useProperties(query);
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setQuery(search);
   };
 
   const clearSearch = () => {
+
     setSearch('');
     setQuery('');
   };
@@ -33,7 +35,6 @@ export default function PropertiesPage() {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.08),transparent_35%)]" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-6 sm:mb-8">
           <div className="min-w-0">
             <p
@@ -78,9 +79,8 @@ export default function PropertiesPage() {
         {/* Search */}
         <form onSubmit={handleSearch} className="mb-5">
           <div
-            className={`flex items-center gap-2 rounded-2xl border bg-white/5 px-3 sm:px-4 transition-all ${
-              focused ? 'border-amber-400/40 ring-2 ring-amber-400/20' : 'border-white/10'
-            }`}
+            className={`flex items-center gap-2 rounded-2xl border bg-white/5 px-3 sm:px-4 transition-all ${focused ? 'border-amber-400/40 ring-2 ring-amber-400/20' : 'border-white/10'
+              }`}
           >
             <Search size={14} className="text-white/30 shrink-0" />
 

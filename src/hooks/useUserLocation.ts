@@ -1,7 +1,7 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { NIGERIAN_STATE_COORDS } from '@/lib';
-import { useState, useEffect } from 'react';
 
 interface StoredLocation {
   lat: number;
@@ -11,145 +11,117 @@ interface StoredLocation {
 }
 
 const STORAGE_KEY = 'naija_rent_location';
-const CACHE_TTL = 24 * 60 * 60 * 1000;
+const CACHE_TTL = 30 * 60 * 1000; 
 
-export function detectStateFromCoords(lat: number, lng: number): string | null {
-  let closest: string | null = null;
+export type LocationStatus =
+  | 'idle'
+  | 'loading'
+  | 'granted'
+  | 'denied';
+
+function detectStateFromCoords(lat: number, lng: number) {
+  let closest = null;
   let minDist = Infinity;
-  for (const s of NIGERIAN_STATE_COORDS) {
-    const dist = Math.sqrt(Math.pow(lat - s.lat, 2) + Math.pow(lng - s.lng, 2));
+
+  for (const state of NIGERIAN_STATE_COORDS) {
+    const dist =
+      (lat - state.lat) ** 2 +
+      (lng - state.lng) ** 2;
+
     if (dist < minDist) {
       minDist = dist;
-      closest = s.name;
+      closest = state.name;
     }
   }
-  return minDist < 3 ? closest : null;
+
+  return closest;
 }
 
-export type LocationStatus = 'idle' | 'granted' | 'denied';
-
 export function useUserLocation() {
-  const [status, setStatus] = useState<LocationStatus>('idle');
-  const [detectedState, setDetectedState] = useState<string | null>(null);
-  const [userCoords, setUserCoords] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+  const [status, setStatus] =
+    useState<LocationStatus>('idle');
 
-  useEffect(() => {
+  const [detectedState, setDetectedState] =
+    useState<string | null>(null);
+
+  const getLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setStatus('denied');
       return;
     }
 
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: 'geolocation' }).then((permResult) => {
-        if (permResult.state === 'denied') {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {}
-          setStatus('denied');
-          return;
-        }
+    setStatus('loading');
 
-        if (permResult.state === 'granted') {
-          try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) {
-              const stored: StoredLocation = JSON.parse(raw);
-              if (Date.now() - stored.timestamp < CACHE_TTL) {
-                setUserCoords({ lat: stored.lat, lng: stored.lng });
-                setDetectedState(stored.detectedState);
-                setStatus('granted');
-                return;
-              }
-            }
-          } catch {}
-
-          navigator.geolocation.getCurrentPosition(
-            (pos) => savePosition(pos.coords.latitude, pos.coords.longitude),
-            () => {
-              try {
-                localStorage.removeItem(STORAGE_KEY);
-              } catch {}
-              setStatus('denied');
-            },
-            { timeout: 10000, enableHighAccuracy: false },
-          );
-          return;
-        }
-
-        // permResult.state === 'prompt' — first time, trigger native browser dialog
-        navigator.geolocation.getCurrentPosition(
-          (pos) => savePosition(pos.coords.latitude, pos.coords.longitude),
-          () => {
-            setStatus('denied');
-          },
-          { timeout: 10000, enableHighAccuracy: false },
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const state = detectStateFromCoords(
+          coords.latitude,
+          coords.longitude
         );
 
-        permResult.onchange = () => {
-          if (permResult.state === 'denied') {
-            try {
-              localStorage.removeItem(STORAGE_KEY);
-            } catch {}
+        const data: StoredLocation = {
+          lat: coords.latitude,
+          lng: coords.longitude,
+          detectedState: state,
+          timestamp: Date.now(),
+        };
+
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(data)
+        );
+
+        setDetectedState(state);
+        setStatus('granted');
+      },
+      () => setStatus('denied'),
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    const cached = localStorage.getItem(STORAGE_KEY);
+
+    if (cached) {
+      const parsed: StoredLocation =
+        JSON.parse(cached);
+
+      if (Date.now() - parsed.timestamp < CACHE_TTL) {
+        setDetectedState(parsed.detectedState);
+        setStatus('granted');
+        return;
+      }
+    }
+
+    getLocation();
+
+    navigator.permissions
+      ?.query({ name: 'geolocation' })
+      .then((permission) => {
+        permission.onchange = () => {
+          if (permission.state === 'granted') {
+            getLocation();
+          } else if (permission.state === 'denied') {
             setStatus('denied');
-            setDetectedState(null);
-            setUserCoords(null);
           }
         };
       });
-    } else {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const stored: StoredLocation = JSON.parse(raw);
-          if (Date.now() - stored.timestamp < CACHE_TTL) {
-            setUserCoords({ lat: stored.lat, lng: stored.lng });
-            setDetectedState(stored.detectedState);
-            setStatus('granted');
-            return;
-          }
-        }
-      } catch {}
-
-      navigator.geolocation.getCurrentPosition(
-        (pos) => savePosition(pos.coords.latitude, pos.coords.longitude),
-        () => {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {}
-          setStatus('denied');
-        },
-        { timeout: 10000, enableHighAccuracy: false },
-      );
-    }
-  }, []);
-
-  const savePosition = (lat: number, lng: number) => {
-    const state = detectStateFromCoords(lat, lng);
-    const toStore: StoredLocation = {
-      lat,
-      lng,
-      detectedState: state,
-      timestamp: Date.now(),
-    };
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
-    } catch {}
-    setUserCoords({ lat, lng });
-    setDetectedState(state);
-    setStatus('granted');
-  };
+  }, [getLocation]);
 
   const clearLocation = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
-    setStatus('denied');
+    localStorage.removeItem(STORAGE_KEY);
     setDetectedState(null);
-    setUserCoords(null);
+    setStatus('idle');
+    getLocation();
   };
 
-  return { status, detectedState, userCoords, clearLocation };
+  return {
+    status,
+    detectedState,
+    clearLocation,
+    refreshLocation: getLocation,
+  };
 }

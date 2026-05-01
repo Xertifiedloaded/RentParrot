@@ -22,7 +22,6 @@ export default function PropertiesPage() {
   };
 
   const clearSearch = () => {
-
     setSearch('');
     setQuery('');
   };

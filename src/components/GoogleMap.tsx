@@ -30,6 +30,9 @@ export default function GoogleMap({
   const clickMarkerRef = useRef<google.maps.Circle | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
+  // Track whether we've done the initial fit so we don't repeat it on every markers update
+  const hasInitialFitRef = useRef(false);
+
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -41,6 +44,43 @@ export default function GoogleMap({
   const stableOnMapClick = useCallback((lat: number, lng: number, state?: string) => {
     onMapClickRef.current?.(lat, lng, state);
   }, []);
+
+
+  const fitAllPoints = useCallback(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const allProperties = singleProperty ? [singleProperty] : properties;
+
+    const points: { lat: number; lng: number }[] = [];
+
+    allProperties.forEach((p) => {
+      if (p.latitude && p.longitude) {
+        points.push({ lat: p.latitude, lng: p.longitude });
+      }
+    });
+
+    if (userLocation?.lat && userLocation?.lng) {
+      points.push(userLocation);
+    }
+
+    if (points.length === 0) {
+      map.setCenter(center);
+      map.setZoom(zoom);
+      return;
+    }
+
+    if (points.length === 1) {
+      map.setCenter(points[0]);
+      map.setZoom(14);
+      return;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+    points.forEach((pt) => bounds.extend(new google.maps.LatLng(pt.lat, pt.lng)));
+
+    map.fitBounds(bounds, { top: 60, right: 60, bottom: 60, left: 60 });
+  }, [properties, userLocation, singleProperty, center, zoom]);
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -64,7 +104,9 @@ export default function GoogleMap({
   useEffect(() => {
     if (!loaded || !mapRef.current) return;
 
-    const mapCenter = singleProperty ? { lat: singleProperty.latitude, lng: singleProperty.longitude } : center;
+    const mapCenter = singleProperty
+      ? { lat: singleProperty.latitude, lng: singleProperty.longitude }
+      : center;
 
     mapInstanceRef.current = new google.maps.Map(mapRef.current, {
       center: mapCenter,
@@ -73,87 +115,25 @@ export default function GoogleMap({
         { elementType: 'geometry', stylers: [{ color: '#1a1a2e' }] },
         { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1a2e' }] },
         { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-        {
-          featureType: 'administrative.locality',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#d59563' }],
-        },
-        {
-          featureType: 'poi',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#d59563' }],
-        },
-        {
-          featureType: 'poi.park',
-          elementType: 'geometry',
-          stylers: [{ color: '#263c3f' }],
-        },
-        {
-          featureType: 'poi.park',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#6b9a76' }],
-        },
-        {
-          featureType: 'road',
-          elementType: 'geometry',
-          stylers: [{ color: '#38414e' }],
-        },
-        {
-          featureType: 'road',
-          elementType: 'geometry.stroke',
-          stylers: [{ color: '#212a37' }],
-        },
-        {
-          featureType: 'road',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#9ca5b3' }],
-        },
-        {
-          featureType: 'road.highway',
-          elementType: 'geometry',
-          stylers: [{ color: '#746855' }],
-        },
-        {
-          featureType: 'road.highway',
-          elementType: 'geometry.stroke',
-          stylers: [{ color: '#1f2835' }],
-        },
-        {
-          featureType: 'road.highway',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#f3d19c' }],
-        },
-        {
-          featureType: 'transit',
-          elementType: 'geometry',
-          stylers: [{ color: '#2f3948' }],
-        },
-        {
-          featureType: 'transit.station',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#d59563' }],
-        },
-        {
-          featureType: 'water',
-          elementType: 'geometry',
-          stylers: [{ color: '#17263c' }],
-        },
-        {
-          featureType: 'water',
-          elementType: 'labels.text.fill',
-          stylers: [{ color: '#515c6d' }],
-        },
-        {
-          featureType: 'water',
-          elementType: 'labels.text.stroke',
-          stylers: [{ color: '#17263c' }],
-        },
+        { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+        { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+        { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#263c3f' }] },
+        { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6b9a76' }] },
+        { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
+        { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
+        { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#9ca5b3' }] },
+        { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
+        { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1f2835' }] },
+        { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#f3d19c' }] },
+        { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f3948' }] },
+        { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
+        { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#515c6d' }] },
+        { featureType: 'water', elementType: 'labels.text.stroke', stylers: [{ color: '#17263c' }] },
       ],
       disableDefaultUI: true,
       zoomControl: true,
-      zoomControlOptions: {
-        position: google.maps.ControlPosition.RIGHT_BOTTOM,
-      },
+      zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
     });
 
     infoWindowRef.current = new google.maps.InfoWindow();
@@ -192,8 +172,10 @@ export default function GoogleMap({
     }
   }, [loaded, center, zoom, singleProperty, stableOnMapClick, onMapClick]);
 
+  // ─── User location dot — place marker only, NO pan/zoom override ──────────
   useEffect(() => {
     if (!mapInstanceRef.current || !userLocation) return;
+
     if (userMarkerRef.current) userMarkerRef.current.setMap(null);
 
     userMarkerRef.current = new google.maps.Marker({
@@ -210,10 +192,10 @@ export default function GoogleMap({
       },
     });
 
-    mapInstanceRef.current.panTo(userLocation);
-    mapInstanceRef.current.setZoom(14);
+    // ✅ Don't panTo or setZoom here — fitAllPoints handles the view
   }, [userLocation]);
 
+  // ─── Place property markers ───────────────────────────────────────────────
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -240,7 +222,6 @@ export default function GoogleMap({
 
       marker.addListener('click', () => {
         onMarkerClick?.(property);
-
         if (infoWindowRef.current) {
           infoWindowRef.current.setContent(`
             <div style="background:#1e1e1e;color:#fff;padding:10px 14px;border-radius:8px;font-family:sans-serif;min-width:180px;">
@@ -254,22 +235,36 @@ export default function GoogleMap({
 
       markersRef.current.push(marker);
     });
-  }, [properties, singleProperty, onMarkerClick]);
 
+    // ✅ After markers are placed, fit the view — but only on initial load
+    // so we don't fight the user if they've panned/zoomed manually
+    if (!hasInitialFitRef.current && allProperties.length > 0) {
+      hasInitialFitRef.current = true;
+      fitAllPoints();
+    }
+  }, [properties, singleProperty, onMarkerClick, fitAllPoints]);
+
+  // ─── Re-fit when user location arrives after markers are already placed ───
+  useEffect(() => {
+    if (!userLocation || !mapInstanceRef.current) return;
+    // Only re-fit if markers are already on the map
+    if (markersRef.current.length > 0) {
+      fitAllPoints();
+    }
+  }, [userLocation, fitAllPoints]);
+
+  // ─── Focused property — pan + zoom to it + open infowindow ───────────────
   useEffect(() => {
     if (!mapInstanceRef.current || !focusedProperty) return;
 
-    const target = {
+    mapInstanceRef.current.panTo({
       lat: focusedProperty.latitude,
       lng: focusedProperty.longitude,
-    };
-    mapInstanceRef.current.panTo(target);
+    });
     mapInstanceRef.current.setZoom(15);
 
-    const focusedMarker = markersRef.current.find((_, i) => {
-      const allProperties = singleProperty ? [singleProperty] : properties;
-      return allProperties[i]?.id === focusedProperty.id;
-    });
+    const allProperties = singleProperty ? [singleProperty] : properties;
+    const focusedMarker = markersRef.current.find((_, i) => allProperties[i]?.id === focusedProperty.id);
 
     if (focusedMarker && infoWindowRef.current) {
       infoWindowRef.current.setContent(`
@@ -282,6 +277,7 @@ export default function GoogleMap({
     }
   }, [focusedProperty, properties, singleProperty]);
 
+  // ─── Heatmap ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapInstanceRef.current || !showHeatmap) {
       if (heatmapRef.current) {

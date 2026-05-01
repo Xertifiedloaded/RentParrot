@@ -184,18 +184,18 @@ export default function PropertyDetailPage() {
 
                 {property.town && (
                   <>
-                    <span className="hidden sm:block text-white/20">•</span>
-                    <span className="text-white/65">{property.town}</span>
+                    <span className="hidden sm:block text-white">•</span>
+                    <span className="text-white">{property.town}</span>
                   </>
                 )}
 
-                <span className="hidden sm:block text-white/20">•</span>
+                <span className="hidden sm:block text-white">•</span>
 
-                <span className="text-white/65">{property.state}</span>
+                <span className="text-white">{property.state}</span>
               </div>
 
               {property.description && (
-                <p className="mt-5 max-w-2xl text-sm sm:text-base text-white/70 leading-7">{property.description}</p>
+                <p className="mt-5 max-w-2xl text-sm sm:text-base text-white leading-7">{property.description}</p>
               )}
             </div>
           </div>
@@ -240,7 +240,7 @@ export default function PropertyDetailPage() {
                 className={`rounded-2xl border border-white/8 ${bg} px-4 py-4 sm:py-5 backdrop-blur-xl transition-all hover:border-white/15`}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-white/45">
+                  <span className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-white">
                     {label}
                   </span>
                   {icon}
@@ -296,7 +296,7 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm leading-7 text-white/75">{summary || 'No summary available.'}</p>
+              <p className="text-sm leading-7 text-white">{summary || 'No summary available.'}</p>
             )}
           </div>
 
@@ -313,7 +313,7 @@ export default function PropertyDetailPage() {
                     key={key}
                     onClick={() => setActiveTab(key)}
                     className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap ${
-                      activeTab === key ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/70'
+                      activeTab === key ? 'bg-white/10 text-white shadow-sm' : 'text-white hover:text-white'
                     }`}
                   >
                     {label}
@@ -335,8 +335,8 @@ export default function PropertyDetailPage() {
                   <MessageSquare size={22} className="text-white/20" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white/60 mb-1">No reviews yet</p>
-                  <p className="text-xs text-white/30">No reviews in this category.</p>
+                  <p className="text-sm font-bold text-white mb-1">No reviews yet</p>
+                  <p className="text-xs text-white">No reviews in this category.</p>
                 </div>
               </div>
             ) : (
@@ -408,7 +408,7 @@ export default function PropertyDetailPage() {
                     }}
                   />
                 </div>
-                <p className="text-[10px] text-white/30">
+                <p className="text-[10px] text-white">
                   Based on {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
                 </p>
               </div>

@@ -44,7 +44,7 @@ export default function HomePage() {
               <div className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/4 px-4 py-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
                 <span
-                  className="text-[11px] font-semibold tracking-[0.14em] uppercase text-white/40"
+                  className="text-[11px] font-semibold tracking-[0.14em] uppercase text-white"
                   style={{ fontFamily: FONT_MONO }}
                 >
                   Tenant Intelligence · Nigeria
@@ -64,7 +64,7 @@ export default function HomePage() {
                   Smarter.
                 </span>
                 <span
-                  className="block text-white/30"
+                  className="block text-white"
                   style={{
                     fontSize: 'clamp(22px, 3.5vw, 42px)',
                     fontStyle: 'italic',
@@ -75,7 +75,7 @@ export default function HomePage() {
                 </span>
               </h1>
 
-              <p className="mb-10 max-w-md text-[15px] leading-[1.75] text-white/40">
+              <p className="mb-10 max-w-md text-[15px] leading-[1.75] text-white">
                 Real reviews from verified tenants across Nigeria. Uncover hidden issues agents and landlords won't tell
                 you — before you sign the apartment.
               </p>
@@ -101,7 +101,7 @@ export default function HomePage() {
                 </Link>
                 <Link
                   href="/map"
-                  className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/4 px-7 py-3.5 text-[13px] font-semibold text-white/50 transition-all duration-200 hover:border-white/20 hover:text-white/80"
+                  className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/4 px-7 py-3.5 text-[13px] font-semibold text-white/80 transition-all duration-200 hover:border-white/20 hover:text-white/80"
                 >
                   <svg
                     width="14"
@@ -230,7 +230,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="reveal mb-16 max-w-2xl">
             <p
-              className="mb-3 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500/60"
+              className="mb-3 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500/80"
               style={{ fontFamily: FONT_MONO }}
             >
               What You Can Discover
@@ -244,13 +244,13 @@ export default function HomePage() {
               }}
             >
               Everything tenants{' '}
-              <span className="text-white/30 not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
+              <span className="text-white not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
                 wish they knew
               </span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-3 border border-white/[0.07] rounded-3xl overflow-hidden">
+          <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-3 border border-gray rounded-3xl overflow-hidden">
             {features.map((f, i) => (
               <div
                 key={f.title}
@@ -259,9 +259,9 @@ export default function HomePage() {
                 <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10 ring-1 ring-amber-500/20">
                   <span className="text-lg">{f.icon}</span>
                 </div>
-                <h3 className="mb-2 text-[15px] font-bold text-white/80">{f.title}</h3>
-                <p className="text-[13px] leading-relaxed text-white/35">{f.desc}</p>
-                <div className="mt-5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-400/50 opacity-0 transition-all duration-200 group-hover:opacity-100">
+                <h3 className="mb-2 text-[15px] font-bold text-white">{f.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white">{f.desc}</p>
+                <div className="mt-5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-400 opacity-0 transition-all duration-200 group-hover:opacity-100">
                   View reports
                   <svg
                     width="11"
@@ -281,12 +281,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── How It Works ── */}
+
       <section className="w-full border-t border-white/6 px-6 py-24 sm:px-12 lg:px-20">
         <div className="mx-auto max-w-7xl">
           <div className="reveal mb-16 max-w-2xl">
             <p
-              className="mb-3 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500/60"
+              className="mb-3 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500/90"
               style={{ fontFamily: FONT_MONO }}
             >
               How It Works
@@ -300,7 +300,7 @@ export default function HomePage() {
               }}
             >
               Three steps to{' '}
-              <span className="text-white/30 not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
+              <span className="text-white not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
                 rent with confidence
               </span>
             </h2>
@@ -313,7 +313,7 @@ export default function HomePage() {
                 className={`reveal d${i + 1} relative rounded-3xl border border-white/[0.07] bg-white/2 p-8 overflow-hidden`}
               >
                 <span
-                  className="pointer-events-none absolute -right-4 -top-4 select-none text-[100px] font-black leading-none text-amber-500/5"
+                  className="pointer-events-none absolute -right-4 -top-4 select-none text-[100px] font-black leading-none text-amber"
                   style={{ fontFamily: FONT_SANS }}
                 >
                   {s.n}
@@ -322,13 +322,13 @@ export default function HomePage() {
                   {s.icon}
                 </div>
                 <p
-                  className="mb-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase text-amber-500/50"
+                  className="mb-1.5 text-[10px] font-semibold tracking-[0.2em] uppercase text-amber-500"
                   style={{ fontFamily: FONT_MONO }}
                 >
                   Step {s.n}
                 </p>
-                <h3 className="mb-3 text-[20px] font-bold text-white/85">{s.title}</h3>
-                <p className="text-[13px] leading-relaxed text-white/35">{s.desc}</p>
+                <h3 className="mb-3 text-[20px] font-bold text-white">{s.title}</h3>
+                <p className="text-[13px] leading-relaxed text-white">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -339,7 +339,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="reveal mb-16 max-w-2xl">
             <p
-              className="mb-3 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500/60"
+              className="mb-3 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500"
               style={{ fontFamily: FONT_MONO }}
             >
               Real Reviews
@@ -353,7 +353,7 @@ export default function HomePage() {
               }}
             >
               What tenants{' '}
-              <span className="text-white/30 not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
+              <span className="text-white not-italic" style={{ fontFamily: FONT_SANS, fontWeight: 800 }}>
                 are saying
               </span>
             </h2>
@@ -379,7 +379,7 @@ export default function HomePage() {
                     <span className="text-white/10">{'★'.repeat(5 - r.stars)}</span>
                   </div>
                 </div>
-                <p className="mb-5 text-[13px] leading-relaxed text-white/40">"{r.text}"</p>
+                <p className="mb-5 text-[13px] leading-relaxed text-white">"{r.text}"</p>
                 <span
                   className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest ring-1 ${r.accent}`}
                 >
@@ -400,7 +400,7 @@ export default function HomePage() {
         />
         <div className="reveal relative z-10 mx-auto max-w-2xl text-center">
           <p
-            className="mb-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500/60"
+            className="mb-4 text-[11px] font-semibold tracking-[0.18em] uppercase text-amber-500"
             style={{ fontFamily: FONT_MONO }}
           >
             Share Your Experience
@@ -415,10 +415,10 @@ export default function HomePage() {
           >
             Know a property?
           </h2>
-          <p className="mb-4 text-[17px] text-white/30" style={{ fontFamily: FONT_SERIF, fontStyle: 'italic' }}>
+          <p className="mb-4 text-[17px] text-white" style={{ fontFamily: FONT_SERIF, fontStyle: 'italic' }}>
             Help fellow renters avoid bad deals.
           </p>
-          <p className="mx-auto mb-10 max-w-sm text-[13px] leading-relaxed text-white/25">
+          <p className="mx-auto mb-10 max-w-sm text-[13px] leading-relaxed text-white">
             Your review can save someone from months of frustration. Join thousands of tenants making smarter renting
             decisions across Nigeria.
           </p>
@@ -442,7 +442,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/post-review"
-              className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/4 px-8 py-4 text-[13px] font-semibold text-white/50 transition-all hover:border-white/20 hover:text-white/80"
+              className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/4 px-8 py-4 text-[13px] font-semibold text-white transition-all hover:border-white/20 hover:text-white/80"
             >
               Post a Review
             </Link>
@@ -464,7 +464,7 @@ function PreviewCard() {
             </div>
             <div>
               <p className="text-[13px] font-semibold text-white/75">Power Supply</p>
-              <p className="text-[11px] text-white/25">Lekki Phase 1</p>
+              <p className="text-[11px] text-white">Lekki Phase 1</p>
             </div>
           </div>
           <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold text-emerald-400 ring-1 ring-emerald-500/20">
@@ -486,18 +486,18 @@ function PreviewCard() {
           </div>
           <div>
             <p className="text-[13px] font-semibold text-white/75">Landlord Rating</p>
-            <p className="text-[11px] text-white/25">Victoria Island</p>
+            <p className="text-[11px] text-white">Victoria Island</p>
           </div>
         </div>
         <p className="mb-1 text-[15px] text-amber-400 tracking-wide">
           ★★★★<span className="text-white/10">★</span>
         </p>
-        <p className="text-[11px] text-white/20">"Responds within 24 hrs" · 12 tenants</p>
+        <p className="text-[11px] text-white">"Responds within 24 hrs" · 12 tenants</p>
       </div>
 
       <div className="rounded-3xl border border-white/8 bg-white/3 p-5">
-        <p className="mb-3 text-[11px] font-semibold tracking-[0.12em] uppercase text-white/20">Recent Review</p>
-        <p className="mb-3 text-[12px] leading-relaxed text-white/40">
+        <p className="mb-3 text-[11px] font-semibold tracking-[0.12em] uppercase text-white">Recent Review</p>
+        <p className="mb-3 text-[12px] leading-relaxed text-white/80">
           "Water supply is consistent, security is good, but the landlord takes weeks to fix issues..."
         </p>
         <div className="flex items-center justify-between">

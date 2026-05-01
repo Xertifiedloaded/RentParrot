@@ -1,67 +1,47 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+'use client'
+import { useState, useCallback, useEffect } from 'react';
 import { useUserLocation } from './useUserLocation';
+import { Property } from '../types/index';
+
+interface UsePropertiesOptions {
+  stateKey?: 'featuredProperties' | 'properties';
+}
 
 export function useProperties(query: string) {
-  const {
-    status,
-    detectedState,
-    clearLocation,
-  } = useUserLocation();
-
-  const [properties, setProperties] = useState([]);
+  const { status, detectedState, clearLocation } = useUserLocation();
+  const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchProperties() {
+  const fetchProperties = useCallback(
+    async (stateFilter?: string) => {
       setLoading(true);
-
       try {
-        const params = new URLSearchParams();
-
+        let url = '/api/properties';
         if (query) {
-          params.set('search', query);
-        } else if (
-          status === 'granted' &&
-          detectedState
-        ) {
-          params.set('state', detectedState);
+          url += `?search=${encodeURIComponent(query)}`;
+        } else if (stateFilter) {
+          url += `?state=${encodeURIComponent(stateFilter)}`;
         }
-
-        const res = await fetch(
-          `/api/properties?${params}`,
-          {
-            cache: 'no-store',
-            signal: controller.signal,
-          }
-        );
-
+        const res = await fetch(url);
         const data = await res.json();
         setProperties(data.properties || []);
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error(err);
-        }
+      } catch {
+        setProperties([]);
       } finally {
         setLoading(false);
       }
-    }
+    },
+    [query],
+  );
 
-    if (status !== 'loading') {
+  useEffect(() => {
+    if (status === 'idle') return;
+    if (query) {
       fetchProperties();
+    } else {
+      fetchProperties(detectedState || undefined);
     }
+  }, [fetchProperties, query, detectedState, status]);
 
-    return () => controller.abort();
-  }, [query, status, detectedState]);
-
-  return {
-    properties,
-    loading,
-    status,
-    detectedState,
-    clearLocation,
-  };
+  return { properties, loading, status, detectedState, clearLocation };
 }

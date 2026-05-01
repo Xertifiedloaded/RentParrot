@@ -11,7 +11,7 @@ interface StoredLocation {
 }
 
 const STORAGE_KEY = 'naija_rent_location';
-const CACHE_TTL = 30 * 60 * 1000; 
+const CACHE_TTL = 30 * 60 * 1000;
 
 export type LocationStatus =
   | 'idle'
@@ -38,11 +38,11 @@ function detectStateFromCoords(lat: number, lng: number) {
 }
 
 export function useUserLocation() {
-  const [status, setStatus] =
-    useState<LocationStatus>('idle');
+  const [status, setStatus] = useState<LocationStatus>('idle');
+  const [detectedState, setDetectedState] = useState<string | null>(null);
 
-  const [detectedState, setDetectedState] =
-    useState<string | null>(null);
+  const [lat, setLat] = useState<number | null>(null);
+  const [lng, setLng] = useState<number | null>(null);
 
   const getLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -54,23 +54,21 @@ export function useUserLocation() {
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        const state = detectStateFromCoords(
-          coords.latitude,
-          coords.longitude
-        );
+        const { latitude, longitude } = coords;
+
+        const state = detectStateFromCoords(latitude, longitude);
 
         const data: StoredLocation = {
-          lat: coords.latitude,
-          lng: coords.longitude,
+          lat: latitude,
+          lng: longitude,
           detectedState: state,
           timestamp: Date.now(),
         };
 
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(data)
-        );
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 
+        setLat(latitude);       
+        setLng(longitude);      
         setDetectedState(state);
         setStatus('granted');
       },
@@ -86,10 +84,11 @@ export function useUserLocation() {
     const cached = localStorage.getItem(STORAGE_KEY);
 
     if (cached) {
-      const parsed: StoredLocation =
-        JSON.parse(cached);
+      const parsed: StoredLocation = JSON.parse(cached);
 
       if (Date.now() - parsed.timestamp < CACHE_TTL) {
+        setLat(parsed.lat);          
+        setLng(parsed.lng);          
         setDetectedState(parsed.detectedState);
         setStatus('granted');
         return;
@@ -114,6 +113,8 @@ export function useUserLocation() {
   const clearLocation = () => {
     localStorage.removeItem(STORAGE_KEY);
     setDetectedState(null);
+    setLat(null);   
+    setLng(null);   
     setStatus('idle');
     getLocation();
   };
@@ -121,6 +122,8 @@ export function useUserLocation() {
   return {
     status,
     detectedState,
+    lat,            
+    lng,            
     clearLocation,
     refreshLocation: getLocation,
   };

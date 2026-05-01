@@ -1,4 +1,4 @@
-// app/api/properties/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getAuthUser } from '@/lib/auth';
@@ -12,7 +12,6 @@ function kmToDegLng(km: number, lat: number) {
   return km / (111.32 * Math.cos((lat * Math.PI) / 180));
 }
 
-// Common include shape – avoids repetition
 const PROPERTY_INCLUDE = {
   user: { select: { id: true, email: true, name: true } },
   _count: { select: { reviews: true } },
